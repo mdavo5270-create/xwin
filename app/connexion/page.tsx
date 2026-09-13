@@ -6,6 +6,7 @@ export default async function ConnexionPage({ searchParams }: { searchParams: Pr
   return (
     <main className="auth">
       <div className="auth-card">
+        <p><Link href="/">← Retour au site</Link></p>
         <p className="eyebrow">XWIN</p>
         <h1>Entrer</h1>
         {q.err ? <p className="err">{q.err}</p> : null}
@@ -17,6 +18,9 @@ export default async function ConnexionPage({ searchParams }: { searchParams: Pr
         </form>
         <p className="muted"><Link href="/mot-de-passe-oublie">Mot de passe oublié</Link></p>
         <p className="muted">Nouveau ? <Link href="/inscription">Rejoindre</Link></p>
+        <p className="muted" style={{ marginTop: "1.2rem" }}>
+          <Link href="/a-propos">À propos</Link> · <Link href="/contact">Contact</Link> · <Link href="/conditions">Conditions</Link>
+        </p>
       </div>
     </main>
   );
