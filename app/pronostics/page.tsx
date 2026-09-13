@@ -1,66 +1,54 @@
 import Link from "next/link";
 import { PublicChrome } from "@/components/PublicChrome";
-import { PronoCard } from "@/components/PronoCard";
+import { PronoRail } from "@/components/PronoTile";
 import { getMember } from "@/lib/members";
 import { sportLabel } from "@/lib/sports";
 import { listPublishedPronos } from "@/lib/store";
 import { ensureSchema } from "@/lib/schema";
+import "../browse.css";
 
 export const dynamic = "force-dynamic";
 
-export default async function PronosticsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ sport?: string; access?: string; status?: string }>;
-}) {
+export default async function PronosticsPage() {
   await ensureSchema();
   const member = await getMember();
-  const { sport, access, status } = await searchParams;
-  const published = await listPublishedPronos();
-  const sportsPresent = [...new Set(published.map((p) => p.sport))];
-  let rows = sport ? published.filter((p) => p.sport === sport) : published;
-  if (access === "free") rows = rows.filter((p) => !p.isPaid);
-  if (access === "premium") rows = rows.filter((p) => p.isPaid);
-  if (status === "pending") rows = rows.filter((p) => p.result === "pending");
-  if (status === "settled") rows = rows.filter((p) => p.result !== "pending");
-
-  function href(next: { sport?: string; access?: string; status?: string }) {
-    const p = new URLSearchParams();
-    const s = next.sport ?? sport;
-    const a = next.access ?? access;
-    const st = next.status ?? status;
-    if (s) p.set("sport", s);
-    if (a) p.set("access", a);
-    if (st) p.set("status", st);
-    const q = p.toString();
-    return q ? `/pronostics?${q}` : "/pronostics";
-  }
+  const all = await listPublishedPronos();
+  const featured = all.find((p) => p.result === "pending") ?? all[0];
+  const open = all.filter((p) => p.result === "pending");
+  const free = all.filter((p) => !p.isPaid);
+  const paid = all.filter((p) => p.isPaid);
+  const settled = all.filter((p) => p.result !== "pending");
+  const bySport = [...new Set(all.map((p) => p.sport))].map((slug) => ({
+    slug,
+    items: all.filter((p) => p.sport === slug),
+  }));
 
   return (
     <PublicChrome member={member}>
-      <main className="wrap">
-        <h1>Pronostics</h1>
-        <div className="tabs">
-          <Link className={!sport ? "on" : ""} href="/pronostics">Tous</Link>
-          {sportsPresent.map((slug) => (
-            <Link key={slug} className={sport === slug ? "on" : ""} href={href({ sport: slug })}>
-              {sportLabel(slug)}
-            </Link>
-          ))}
-        </div>
-        <div className="tabs">
-          <Link className={!access && !status ? "on" : ""} href={href({ access: "", status: "" })}>Tous</Link>
-          <Link className={access === "free" ? "on" : ""} href={href({ access: "free" })}>Gratuit</Link>
-          <Link className={access === "premium" ? "on" : ""} href={href({ access: "premium" })}>Premium</Link>
-          <Link className={status === "pending" ? "on" : ""} href={href({ status: "pending" })}>Ouverts</Link>
-          <Link className={status === "settled" ? "on" : ""} href={href({ status: "settled" })}>Soldés</Link>
-        </div>
-        {rows.length === 0 ? <p className="empty">Aucun ticket sur ce filtre.</p> : (
-          <div className="grid two">
-            {rows.map((p) => <PronoCard key={p.id} p={p} hidePick={p.isPaid && !member} />)}
+      {featured ? (
+        <section className="billboard">
+          <p className="kicker">Au programme</p>
+          <h1>{featured.eventName}</h1>
+          <p className="meta">
+            {sportLabel(featured.sport)} · {featured.competition}
+            {featured.isPaid ? " · Premium" : " · Gratuit"}
+          </p>
+          <div className="cta-row">
+            <Link className="btn" href={`/pronostics/${featured.id}`}>Voir le ticket</Link>
+            <Link className="btn ghost" href="/premium">Premium</Link>
           </div>
-        )}
-      </main>
+        </section>
+      ) : (
+        <main className="wrap"><p className="empty">Aucun ticket pour le moment.</p></main>
+      )}
+      <PronoRail title="Ouverts maintenant" items={open} hidePaidPick={!member} />
+      {bySport.map((row) => (
+        <PronoRail key={row.slug} title={sportLabel(row.slug)} items={row.items} hidePaidPick={!member} />
+      ))}
+      <PronoRail title="Gratuit" items={free} />
+      <PronoRail title="Premium" items={paid} hidePaidPick={!member} />
+      <PronoRail title="Déjà soldés" items={settled} />
+      <div style={{ height: "1.2rem" }} />
     </PublicChrome>
   );
 }
