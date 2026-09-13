@@ -5,6 +5,7 @@ import { listPublishedPronos } from "@/lib/store";
 import { ensureSchema } from "@/lib/schema";
 import { computePerformance } from "@/lib/performance";
 import { sportLabel } from "@/lib/sports";
+import { formatDateTime } from "@/lib/format-date";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ function Card({ p, hidePick }: { p: Awaited<ReturnType<typeof listPublishedProno
       </div>
       <p className="muted">{p.competition}</p>
       <h3>{p.eventName}</h3>
-      <p className="muted">{p.kickoff || new Date(p.createdAt).toLocaleString("fr-FR")}</p>
+      <p className="muted">{p.kickoff || formatDateTime(p.createdAt)}</p>
       <p>{hidePick || p.isPaid ? "Analyse exclusive" : p.pick}</p>
     </Link>
   );
