@@ -1,31 +1,25 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { getMember } from "@/lib/members";
+import { Shell } from "@/components/Shell";
 
 export const metadata: Metadata = {
   title: "XWIN",
-  description: "Pronos et montantes",
+  description: "Plateforme pronos et montantes",
   applicationName: "XWIN",
-  appleWebApp: { capable: true, title: "XWIN", statusBarStyle: "black-translucent" },
 };
 
 export const viewport: Viewport = {
   themeColor: "#0b3d3a",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const member = await getMember();
   return (
     <html lang="fr">
-      <body>
-        <div className="phone">{children}</div>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js")}`,
-          }}
-        />
-      </body>
+      <body>{member ? <Shell member={member}>{children}</Shell> : children}</body>
     </html>
   );
 }
