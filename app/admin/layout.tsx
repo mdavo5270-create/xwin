@@ -6,22 +6,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!isAdminConfigured()) {
     return (
       <main className="wrap">
-        <p className="empty">ADMIN_SECRET manquant.</p>
+        <p className="empty">Configuration incomplète.</p>
       </main>
     );
   }
 
   const ok = await isAdmin();
   if (!ok) {
-    // Porte d'entrée unique : tant que l'admin n'est pas authentifié,
-    // AUCUNE sous-page (children) n'est rendue, quelle que soit l'URL visitée.
     return (
       <main className="auth">
         <form action={loginAction} className="auth-card">
-          <h1>Admin</h1>
+          <h1>Accès</h1>
           <label>
-            Mot de passe équipe
-            <input name="password" type="password" required />
+            Mot de passe
+            <input name="password" type="password" required autoComplete="current-password" />
           </label>
           <button className="btn" type="submit">Entrer</button>
         </form>
