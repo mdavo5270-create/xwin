@@ -1,16 +1,14 @@
 # Stratégie de dépôts
 
-## Décision : Option A — Monorepo
+## Décision : Option A — Monorepo public
 
-Dépôt unique : `mdavo5270-create/xwin`.
+Dépôt canonique unique : [`mdavo5270-create/xwin`](https://github.com/mdavo5270-create/xwin) (**public**).
 
 ### Pourquoi
 
-- Phase actuelle = fondations uniquement, une seule équipe / un seul compte GitHub.
-- Un seul pipeline CI, une seule politique de branche, un seul endroit pour la sécurité.
-- Évite la duplication de templates, Dependabot et documentation.
-- Un split futur (`xwin-web`, `xwin-api`, `xwin-infrastructure`) reste possible sans dette bloquante : les dossiers `apps/` et `docs/` sont déjà séparés conceptuellement.
+- Phase fondations, un seul compte GitHub.
+- Un pipeline CI, une politique de branche, un endroit pour la sécurité.
+- Le dépôt public permet les rulesets GitHub Free (protection de `main`).
+- Un split futur (`xwin-web`, `xwin-api`) reste possible.
 
-### Ce qui n'a pas été choisi
-
-Option B (multi-repos) multiplierait les dépôts vides avant le moindre code. Non pertinent à ce stade.
+Le dépôt temporaire `x-win` a été supprimé. Ne plus l'utiliser.
