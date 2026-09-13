@@ -29,6 +29,12 @@ export async function ensureSchema() {
   await sql()`CREATE TABLE IF NOT EXISTS audit_logs (
     id uuid PRIMARY KEY, actor text NOT NULL, action text NOT NULL,
     resource text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`;
+  await sql()`CREATE TABLE IF NOT EXISTS votes (
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    prono_id uuid NOT NULL,
+    choice text NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    PRIMARY KEY (user_id, prono_id))`;
   ready = true;
   await ensureLaunchTickets();
 }
