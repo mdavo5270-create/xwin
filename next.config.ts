@@ -8,8 +8,13 @@ const nextConfig: NextConfig = {
       { source: "/register", destination: "/inscription", permanent: false },
       { source: "/pronos", destination: "/pronostics", permanent: false },
       { source: "/pronos/:id", destination: "/pronostics/:id", permanent: false },
+      { source: "/pronos/:id/suivi", destination: "/pronostics/:id", permanent: false },
       { source: "/compte", destination: "/app/profil", permanent: false },
       { source: "/abonnements", destination: "/premium", permanent: false },
+      { source: "/aide", destination: "/faq", permanent: false },
+      { source: "/legal", destination: "/mentions-legales", permanent: false },
+      { source: "/montantes", destination: "/premium", permanent: false },
+      { source: "/montantes/:id", destination: "/premium", permanent: false },
     ];
   },
 };
