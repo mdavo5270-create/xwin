@@ -15,48 +15,50 @@ export default async function PronosticDetail({ params }: { params: Promise<{ id
   const { id } = await params;
   const p = await getProno(id);
   if (!p || p.status === "draft") notFound();
-  const locked = p.isPaid;
+  const gated = !member;
   return (
     <PublicChrome member={member}>
       <main className="wrap">
-        <p><Link href="/pronostics">← Pronostics</Link></p>
+        <p><Link href="/pronostics">← Retour aux pronostics</Link></p>
         <p className="muted">{sportLabel(p.sport)} · {p.competition}</p>
         <h1>{p.eventName}</h1>
-        <span className={p.isPaid ? "badge pay" : "badge"}>{p.isPaid ? "Premium" : "Gratuit"}</span>
-        {p.kickoff ? <p className="muted">Coup d’envoi {p.kickoff}</p> : null}
-        <p className="muted">Publié {formatDateTime(p.createdAt)}</p>
-        <section className="card" style={{ marginTop: "1rem" }}>
-          <h2>Pronostic</h2>
-          {locked ? (
-            <>
-              <p>Pronostic Premium. Analyse complète verrouillée.</p>
-              <Link className="btn" href="/premium">Voir Premium</Link>
-            </>
-          ) : (
-            <>
+        <span className={p.isPaid ? "badge pay" : "badge"}>{p.isPaid ? "Offre" : "Public"}</span>
+        {p.kickoff ? <p className="muted">Coup d’envoi {formatDateTime(p.kickoff)}</p> : null}
+        {gated ? (
+          <section className="card" style={{ marginTop: "1rem" }}>
+            <h2>Compte requis</h2>
+            <p className="muted">Sans compte, le pick, l’analyse et le suivi restent fermés — même sur un ticket public.</p>
+            <div className="cta-row">
+              <Link className="btn" href={`/connexion?next=/pronostics/${p.id}`}>Entrer</Link>
+              <Link className="btn ghost" href="/inscription">Rejoindre</Link>
+            </div>
+          </section>
+        ) : p.isPaid ? (
+          <section className="card" style={{ marginTop: "1rem" }}>
+            <h2>Ticket offres</h2>
+            <p className="muted">Analyse réservée. Paiement encore coupé.</p>
+            <Link className="btn ghost" href="/premium">Voir les offres</Link>
+          </section>
+        ) : (
+          <>
+            <section className="card" style={{ marginTop: "1rem" }}>
+              <h2>Pronostic</h2>
               <p style={{ fontWeight: 700, fontSize: "1.15rem" }}>{p.pick}</p>
               <p className="muted">Cote {p.odd || "—"} · Confiance {p.confidence || "—"} · Mise {p.stakeUnits} u</p>
-            </>
-          )}
-        </section>
-        <section className="card" style={{ marginTop: ".7rem" }}>
-          <h2>Analyse</h2>
-          {locked ? <p className="muted">Réservé. Paiement encore off.</p> : <p style={{ whiteSpace: "pre-wrap" }}>{p.rationale}</p>}
-        </section>
-        <p className="muted">Statut {p.status} · Résultat {p.result}</p>
-        <div className="cta-row" style={{ marginTop: "1rem" }}>
-          {!locked ? (
+            </section>
+            <section className="card" style={{ marginTop: ".7rem" }}>
+              <h2>Analyse</h2>
+              <p style={{ whiteSpace: "pre-wrap" }}>{p.rationale}</p>
+            </section>
             <form action={followAction.bind(null, p.id)}>
               <button className="btn ghost" type="submit">Je suis ce prono ({p.followCount})</button>
             </form>
-          ) : null}
-          {member ? (
             <form action={favoriteAction}>
               <input type="hidden" name="id" value={p.id} />
-              <button className="btn" type="submit">Ajouter / retirer des favoris</button>
+              <button className="btn" type="submit">Favoris</button>
             </form>
-          ) : null}
-        </div>
+          </>
+        )}
       </main>
     </PublicChrome>
   );

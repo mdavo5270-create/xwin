@@ -11,11 +11,11 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
           <Image src={logo} alt="XWIN" priority />
         </Link>
         <nav className="pub-nav">
-          <Link href="/pronostics">Pronos</Link>
-          <Link href="/resultats">Live book</Link>
+          <Link href="/pronostics">Pronostics</Link>
+          <Link href="/resultats">Historique</Link>
           <Link href="/montantes">Montantes</Link>
-          <Link href="/analyses">Notes</Link>
-          <Link href="/premium">Club</Link>
+          <Link href="/analyses">Analyses</Link>
+          <Link href="/premium">Offres</Link>
         </nav>
         <div className="pub-auth">
           {member ? <Link className="btn-sm" href="/app">Espace</Link> : (
@@ -31,7 +31,7 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
         <Link href="/">Home</Link>
         <Link href="/pronostics">Pronos</Link>
         <Link href="/resultats">Book</Link>
-        <Link href="/premium">Club</Link>
+        <Link href="/premium">Offres</Link>
         <Link href={member ? "/app" : "/connexion"}>Moi</Link>
       </nav>
       <footer className="pub-foot">

@@ -31,11 +31,11 @@ export default async function PronosticsPage() {
           <h1>{featured.eventName}</h1>
           <p className="meta">
             {sportLabel(featured.sport)} · {featured.competition}
-            {featured.isPaid ? " · Premium" : " · Gratuit"}
+            {featured.isPaid ? " · Offre" : " · Public"}
           </p>
           <div className="cta-row">
             <Link className="btn" href={`/pronostics/${featured.id}`}>Voir le ticket</Link>
-            <Link className="btn ghost" href="/premium">Premium</Link>
+            <Link className="btn ghost" href="/premium">Offres</Link>
           </div>
         </section>
       ) : (
@@ -45,9 +45,9 @@ export default async function PronosticsPage() {
       {bySport.map((row) => (
         <PronoRail key={row.slug} title={sportLabel(row.slug)} items={row.items} hidePaidPick={!member} />
       ))}
-      <PronoRail title="Gratuit" items={free} />
-      <PronoRail title="Premium" items={paid} hidePaidPick={!member} />
-      <PronoRail title="Déjà soldés" items={settled} />
+      <PronoRail title="Public" items={free} hidePaidPick={!member} />
+      <PronoRail title="Offres" items={paid} hidePaidPick />
+      <PronoRail title="Déjà soldés" items={settled} hidePaidPick={!member} />
       <div style={{ height: "1.2rem" }} />
     </PublicChrome>
   );
