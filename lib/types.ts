@@ -1,0 +1,30 @@
+export type PronoStatus = "draft" | "published" | "settled";
+export type PronoResult = "pending" | "hit" | "miss";
+export type MontanteCadence = "weekly" | "monthly";
+export type MontanteStatus = "draft" | "open" | "closed";
+
+export type Prono = {
+  id: string;
+  sport: string;
+  competition: string;
+  eventName: string;
+  kickoff: string;
+  pick: string;
+  rationale: string;
+  status: PronoStatus;
+  result: PronoResult;
+  followCount: number;
+  createdAt: string;
+};
+
+export type Montante = {
+  id: string;
+  title: string;
+  cadence: MontanteCadence;
+  steps: number;
+  entryAmount: string;
+  currency: string;
+  description: string;
+  status: MontanteStatus;
+  createdAt: string;
+};
