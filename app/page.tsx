@@ -1,52 +1,67 @@
 import Link from "next/link";
-import { listOpenMontantes, listPublishedPronos } from "@/lib/store";
-import { SPORTS } from "@/lib/sports";
+import { PublicChrome } from "@/components/PublicChrome";
+import { getMember } from "@/lib/members";
+import { listPublishedPronos } from "@/lib/store";
 import { ensureSchema } from "@/lib/schema";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   await ensureSchema();
+  const member = await getMember();
   const all = await listPublishedPronos();
-  const today = all.slice(0, 8);
-  const montantes = (await listOpenMontantes()).slice(0, 3);
+  const free = all.filter((p) => !p.isPaid).slice(0, 4);
+  const paid = all.filter((p) => p.isPaid).slice(0, 4);
   return (
-    <>
-      <h1>Aujourd’hui</h1>
-      <p className="muted">Pronos du jour et de la semaine — uniquement ce que l’équipe a publié.</p>
-      <div className="tabs">
-        {SPORTS.map((s) => (
-          <Link key={s.slug} href={`/pronos?sport=${s.slug}`}>{s.label}</Link>
-        ))}
-      </div>
-      <h2>Pronostics</h2>
-      {today.length === 0 ? (
-        <p className="empty">Aucun prono publié.</p>
-      ) : (
-        <div className="grid two">
-          {today.map((p) => (
-            <Link className="card" key={p.id} href={`/pronos/${p.id}`} style={{ color: "inherit", textDecoration: "none" }}>
-              <span className={p.isPaid ? "badge pay" : "badge"}>{p.isPaid ? "Payant" : "Gratuit"}</span>
-              <div className="muted" style={{ marginTop: ".35rem" }}>{p.competition}</div>
-              <strong>{p.eventName}</strong>
-              <div>{p.isPaid ? "Prono réservé aux abonnés" : `Prono : ${p.pick}`}</div>
-            </Link>
-          ))}
+    <PublicChrome member={member}>
+      <section className="hero">
+        <h1>Des analyses. Des pronostics. Une stratégie.</h1>
+        <p>XWIN publie uniquement ce que l’équipe a réellement saisi. Pas de fiches fictives.</p>
+        <div className="cta-row">
+          <Link className="btn-sm" href="/pronostics">Découvrir les pronostics</Link>
+          <Link className="btn-sm" href="/premium">Voir les offres</Link>
         </div>
-      )}
-      <h2>Montantes ouvertes</h2>
-      {montantes.length === 0 ? (
-        <p className="empty">Aucune montante.</p>
-      ) : (
-        <div className="grid two">
-          {montantes.map((m) => (
-            <Link className="card" key={m.id} href={`/montantes/${m.id}`} style={{ color: "inherit", textDecoration: "none" }}>
-              <strong>{m.title}</strong>
-              <div className="muted">{m.steps} paliers · {m.entryAmount} {m.currency}</div>
+      </section>
+      <main className="wrap">
+        <h2>Derniers pronostics</h2>
+        {all.length === 0 ? <p className="empty">Aucun prono publié pour l’instant.</p> : (
+          <div className="grid two">
+            {all.slice(0, 6).map((p) => (
+              <Link key={p.id} className="card" href={`/pronostics/${p.id}`} style={{ color: "inherit", textDecoration: "none" }}>
+                <span className={p.isPaid ? "badge pay" : "badge"}>{p.isPaid ? "Premium" : "Gratuit"}</span>
+                <div className="muted">{p.competition}</div>
+                <strong>{p.eventName}</strong>
+              </Link>
+            ))}
+          </div>
+        )}
+        <h2>Pronostics gratuits</h2>
+        {free.length === 0 ? <p className="empty">Pas encore de prono gratuit.</p> : (
+          <div className="grid two">{free.map((p) => (
+            <Link key={p.id} className="card" href={`/pronostics/${p.id}`} style={{ color: "inherit", textDecoration: "none" }}>
+              <strong>{p.eventName}</strong><div>{p.pick}</div>
             </Link>
-          ))}
+          ))}</div>
+        )}
+        <h2>Pronostics premium</h2>
+        {paid.length === 0 ? <p className="empty">Pas encore de prono premium.</p> : (
+          <div className="grid two">{paid.map((p) => (
+            <Link key={p.id} className="card" href={`/pronostics/${p.id}`} style={{ color: "inherit", textDecoration: "none" }}>
+              <strong>{p.eventName}</strong><div className="muted">Analyse verrouillée</div>
+            </Link>
+          ))}</div>
+        )}
+        <h2>Performances</h2>
+        <p className="empty">Les stats n’apparaissent que lorsqu’un prono est soldé en admin. Rien n’est inventé.</p>
+        <h2>Pourquoi XWIN</h2>
+        <div className="grid three">
+          <div className="card">Match + pick + pourquoi, saisis par l’équipe.</div>
+          <div className="card">Gratuit et premium séparés. Paiement encore coupé.</div>
+          <div className="card">Historique public uniquement à partir des résultats réels.</div>
         </div>
-      )}
-    </>
+        <h2>Rejoindre XWIN</h2>
+        <Link className="btn" href="/inscription">Créer un compte</Link>
+      </main>
+    </PublicChrome>
   );
 }
