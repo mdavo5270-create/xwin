@@ -1,12 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { getMember } from "@/lib/members";
-import { Shell } from "@/components/Shell";
 
 export const metadata: Metadata = {
   title: "XWIN",
-  description: "Plateforme pronos et montantes",
-  applicationName: "XWIN",
+  description: "Analyses et pronostics — portail public et espace membre",
 };
 
 export const viewport: Viewport = {
@@ -15,11 +12,10 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const member = await getMember();
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">
-      <body>{member ? <Shell member={member}>{children}</Shell> : children}</body>
+      <body>{children}</body>
     </html>
   );
 }
