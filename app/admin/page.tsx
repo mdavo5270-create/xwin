@@ -1,12 +1,11 @@
 import { listAllMontantes, listAllPronos } from "@/lib/store";
 import { countUsers } from "@/lib/admin-data";
 import { ensureSchema } from "@/lib/schema";
+import { adminHref } from "@/lib/admin-path";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-// L'authentification est désormais garantie par app/admin/layout.tsx :
-// cette page ne peut jamais être rendue pour un visiteur non-admin.
 export default async function AdminHome() {
   await ensureSchema();
   const users = await countUsers();
@@ -21,7 +20,7 @@ export default async function AdminHome() {
         <div className="card">Montantes {montantes.length}</div>
         <div className="card">Revenus — (paiement off)</div>
       </div>
-      <p style={{ marginTop: "1rem" }}><Link href="/admin/predictions">Gérer les pronostics</Link></p>
+      <p style={{ marginTop: "1rem" }}><Link href={adminHref("predictions")}>Gérer les pronostics</Link></p>
     </>
   );
 }

@@ -9,16 +9,17 @@ import { createAnalysis } from "@/lib/editorial";
 import { ensureSchema } from "@/lib/schema";
 import { sql } from "@/lib/db";
 import type { PronoResult } from "@/lib/types";
+import { adminHref } from "@/lib/admin-path";
 
 export async function loginAction(form: FormData) {
   const ok = await loginAdmin(String(form.get("password") ?? ""));
-  if (!ok) redirect("/admin?err=1");
-  redirect("/admin");
+  if (!ok) redirect(`${adminHref()}?err=1`);
+  redirect(adminHref());
 }
 
 export async function logoutAction() {
   await logoutAdmin();
-  redirect("/admin");
+  redirect(adminHref());
 }
 
 async function log(action: string, resource: string) {
@@ -27,7 +28,7 @@ async function log(action: string, resource: string) {
 }
 
 export async function createPronoAction(form: FormData) {
-  if (!(await isAdmin())) redirect("/admin");
+  if (!(await isAdmin())) redirect(adminHref());
   await ensureSchema();
   const created = await createProno({
     sport: String(form.get("sport") ?? ""),
@@ -46,24 +47,22 @@ export async function createPronoAction(form: FormData) {
   revalidatePath("/");
   revalidatePath("/pronostics");
   revalidatePath("/resultats");
-  revalidatePath("/admin/predictions");
-  redirect("/admin/predictions");
+  redirect(adminHref("predictions"));
 }
 
 export async function settleAction(form: FormData) {
-  if (!(await isAdmin())) redirect("/admin");
+  if (!(await isAdmin())) redirect(adminHref());
   const id = String(form.get("id") ?? "");
   const result = String(form.get("result") ?? "") as PronoResult;
-  if (!id || !["hit", "miss", "void"].includes(result)) redirect("/admin/results");
+  if (!id || !["hit", "miss", "void"].includes(result)) redirect(adminHref("results"));
   await settleProno(id, result);
   await log("settle_prono", `${id}:${result}`);
   revalidatePath("/resultats");
-  revalidatePath("/admin/results");
-  redirect("/admin/results");
+  redirect(adminHref("results"));
 }
 
 export async function createAnalysisAction(form: FormData) {
-  if (!(await isAdmin())) redirect("/admin");
+  if (!(await isAdmin())) redirect(adminHref());
   await createAnalysis({
     title: String(form.get("title") ?? "").trim(),
     sport: String(form.get("sport") ?? "").trim(),
@@ -71,11 +70,11 @@ export async function createAnalysisAction(form: FormData) {
     status: "published",
   });
   revalidatePath("/analyses");
-  redirect("/admin/analyses");
+  redirect(adminHref("analyses"));
 }
 
 export async function createMontanteAction(form: FormData) {
-  if (!(await isAdmin())) redirect("/admin");
+  if (!(await isAdmin())) redirect(adminHref());
   await createMontante({
     title: String(form.get("title") ?? "").trim(),
     cadence: form.get("cadence") === "monthly" ? "monthly" : "weekly",
@@ -86,5 +85,5 @@ export async function createMontanteAction(form: FormData) {
     status: "open",
   });
   revalidatePath("/montantes");
-  redirect("/admin");
+  redirect(adminHref());
 }
