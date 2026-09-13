@@ -2,28 +2,32 @@ import Link from "next/link";
 import { PublicChrome } from "@/components/PublicChrome";
 import { getMember } from "@/lib/members";
 
-const OFFERS = [
-  { slug: "journalier", title: "Pack journalier", text: "Pronos premium du jour. Prix à confirmer." },
-  { slug: "hebdomadaire", title: "Pack hebdomadaire", text: "7 jours d’accès premium. Prix à confirmer." },
-  { slug: "mensuel", title: "Abonnement mensuel", text: "Pronos + montantes du mois. Prix à confirmer." },
-];
-
 export default async function PremiumPage() {
   const member = await getMember();
   return (
     <PublicChrome member={member}>
-      <main className="wrap">
-        <h1>Premium</h1>
-        <p className="muted">Accès aux pronostics exclusifs. Encaissement désactivé.</p>
-        <div className="grid three">
-          {OFFERS.map((o) => (
-            <Link key={o.slug} className="card" href={`/premium/${o.slug}`} style={{ color: "inherit", textDecoration: "none" }}>
-              <h2>{o.title}</h2>
-              <p>{o.text}</p>
-              <span className="btn off">Choisir</span>
-            </Link>
-          ))}
+      <main className="wrap" style={{ textAlign: "center" }}>
+        <p className="kicker">XWIN Premium</p>
+        <h1>Passez à l’expérience complète.</h1>
+        <p className="muted">Prix à figer avant encaissement. Boutons désactivés.</p>
+        <div className="grid two" style={{ textAlign: "left", marginTop: "1.4rem" }}>
+          <section className="card">
+            <h3>Essentiel</h3>
+            <p className="muted">/ semaine · FCFA</p>
+            <p>Pronos premium 7 jours</p>
+            <p>Historique</p>
+            <button className="btn off" type="button" disabled>Choisir</button>
+          </section>
+          <section className="card" style={{ borderColor: "rgba(61,255,138,.35)" }}>
+            <span className="badge pay">Recommandé</span>
+            <h3>Pro</h3>
+            <p className="muted">/ mois · FCFA</p>
+            <p>Pronos + analyses</p>
+            <p>Montantes du mois</p>
+            <button className="btn off" type="button" disabled>Choisir</button>
+          </section>
         </div>
+        <p style={{ marginTop: "1.2rem" }}><Link href="/resultats">Voir d’abord les résultats publics</Link></p>
       </main>
     </PublicChrome>
   );

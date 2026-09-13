@@ -3,6 +3,8 @@ import { PublicChrome } from "@/components/PublicChrome";
 import { getMember } from "@/lib/members";
 import { listPublishedPronos } from "@/lib/store";
 import { ensureSchema } from "@/lib/schema";
+import { computePerformance } from "@/lib/performance";
+import { sportLabel } from "@/lib/sports";
 
 export const dynamic = "force-dynamic";
 
@@ -10,60 +12,44 @@ export default async function HomePage() {
   await ensureSchema();
   const member = await getMember();
   const all = await listPublishedPronos();
-  const free = all.filter((p) => !p.isPaid).slice(0, 4);
-  const paid = all.filter((p) => p.isPaid).slice(0, 4);
+  const s = computePerformance(all);
   return (
     <PublicChrome member={member}>
       <section className="hero">
-        <p className="muted" style={{ letterSpacing: ".18em", textTransform: "uppercase", fontSize: ".72rem" }}>
-          Plateforme d’analyses
-        </p>
-        <h1>Des analyses. Des pronostics. Une stratégie.</h1>
-        <p>XWIN publie uniquement ce que l’équipe a réellement saisi. Pas de fiches fictives.</p>
-        <div className="cta-row">
-          <Link className="btn-sm" href="/pronostics">Découvrir les pronostics</Link>
-          <Link className="btn-sm" href="/premium">Voir les offres</Link>
+        <div>
+          <p className="kicker">Analyse · Stratégie · Performance</p>
+          <h1>Des décisions plus éclairées grâce à une analyse structurée.</h1>
+          <p>XWIN publie uniquement ce que l’équipe a saisi. Les chiffres viennent des pronos soldés, pas d’un décor.</p>
+          <div className="cta-row">
+            <Link className="btn" href="/pronostics">Voir les pronostics</Link>
+            <Link className="btn ghost" href="/premium">Découvrir Premium</Link>
+          </div>
         </div>
+        <aside className="perf">
+          <p className="kicker">Performance</p>
+          <strong>{s.rate === null ? "—" : `${s.rate}%`}</strong>
+          <p className="muted">Réussite sur {s.settled} soldés{s.sampleOk ? "" : " · échantillon encore faible"}</p>
+          <Link href="/resultats">Historique →</Link>
+        </aside>
       </section>
       <main className="wrap">
         <h2>Derniers pronostics</h2>
-        {all.length === 0 ? <p className="empty">Aucun prono publié pour l’instant.</p> : (
+        {all.length === 0 ? <p className="empty">Aucun pronostic disponible.</p> : (
           <div className="grid two">
             {all.slice(0, 6).map((p) => (
               <Link key={p.id} className="card" href={`/pronostics/${p.id}`}>
-                <span className={p.isPaid ? "badge pay" : "badge"}>{p.isPaid ? "Premium" : "Gratuit"}</span>
-                <div className="muted">{p.competition}</div>
-                <strong>{p.eventName}</strong>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span className="badge">{sportLabel(p.sport)}</span>
+                  <span className={p.isPaid ? "badge pay" : "badge"}>{p.isPaid ? "✦ Premium" : "Gratuit"}</span>
+                </div>
+                <p className="muted">{p.competition}</p>
+                <h3>{p.eventName}</h3>
+                <p className="muted">{p.kickoff || new Date(p.createdAt).toLocaleString("fr-FR")}</p>
+                <p>{p.isPaid ? "Analyse exclusive" : p.pick}</p>
               </Link>
             ))}
           </div>
         )}
-        <h2>Pronostics gratuits</h2>
-        {free.length === 0 ? <p className="empty">Pas encore de prono gratuit.</p> : (
-          <div className="grid two">{free.map((p) => (
-            <Link key={p.id} className="card" href={`/pronostics/${p.id}`}>
-              <strong>{p.eventName}</strong><div>{p.pick}</div>
-            </Link>
-          ))}</div>
-        )}
-        <h2>Pronostics premium</h2>
-        {paid.length === 0 ? <p className="empty">Pas encore de prono premium.</p> : (
-          <div className="grid two">{paid.map((p) => (
-            <Link key={p.id} className="card" href={`/pronostics/${p.id}`}>
-              <strong>{p.eventName}</strong><div className="muted">Analyse verrouillée</div>
-            </Link>
-          ))}</div>
-        )}
-        <h2>Performances</h2>
-        <p className="empty">Les stats n’apparaissent que lorsqu’un prono est soldé en admin. Rien n’est inventé.</p>
-        <h2>Pourquoi XWIN</h2>
-        <div className="grid three">
-          <div className="card">Match + pick + pourquoi, saisis par l’équipe.</div>
-          <div className="card">Gratuit et premium séparés. Paiement encore coupé.</div>
-          <div className="card">Historique public uniquement à partir des résultats réels.</div>
-        </div>
-        <h2>Rejoindre XWIN</h2>
-        <Link className="btn" href="/inscription">Créer un compte</Link>
       </main>
     </PublicChrome>
   );
