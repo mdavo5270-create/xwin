@@ -1,14 +1,19 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { Member } from "@/lib/types";
+import logo from "@/public/logo-full.png";
 
 export function PublicChrome({ member, children }: { member: Member | null; children: React.ReactNode }) {
   return (
     <div className="site">
       <header className="pub-head">
-        <Link className="logo" href="/">XWIN</Link>
+        <Link className="logo" href="/">
+          <Image src={logo} alt="XWIN" priority />
+        </Link>
         <nav className="pub-nav">
           <Link href="/">Accueil</Link>
           <Link href="/pronostics">Pronostics</Link>
+          <Link href="/montantes">Montantes</Link>
           <Link href="/analyses">Analyses</Link>
           <Link href="/resultats">Résultats</Link>
           <Link href="/premium">Premium</Link>
