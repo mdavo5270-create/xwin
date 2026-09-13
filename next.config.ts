@@ -2,12 +2,6 @@ import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
 
-// CSP calibrée sur ce qui est réellement utilisé dans l'app :
-// - pas de script inline, pas de script tiers -> script-src 'self' strict
-// - style={{...}} (React) et le CSS des next/font nécessitent 'unsafe-inline'
-//   en style-src (les attributs style="" sont couverts par style-src, pas
-//   seulement les balises <style>)
-// - aucune image/police chargée depuis un domaine externe -> 'self' partout
 const csp = [
   "default-src 'self'",
   "script-src 'self'",
@@ -36,7 +30,6 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
           },
-          // HSTS uniquement en prod : en dev, ça forcerait https sur localhost.
           ...(isProd
             ? [
                 {
