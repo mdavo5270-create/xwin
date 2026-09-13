@@ -1,7 +1,20 @@
 import { getMember } from "@/lib/members";
 import { redirect } from "next/navigation";
-export default async function Page() {
+import { updateProfileAction } from "./actions";
+
+export default async function Page({ searchParams }: { searchParams: Promise<{ ok?: string }> }) {
   const m = await getMember();
   if (!m) redirect("/connexion");
-  return (<><h1>Profil</h1><section className="card"><p>{m.name}</p><p className="muted">{m.email}</p></section></>);
+  const q = await searchParams;
+  return (
+    <>
+      <h1>Profil</h1>
+      {q.ok ? <p className="card">Enregistré.</p> : null}
+      <form action={updateProfileAction} className="card">
+        <label>Nom<input name="name" defaultValue={m.name} required /></label>
+        <label>Email<input value={m.email} disabled /></label>
+        <button className="btn" type="submit">Modifier</button>
+      </form>
+    </>
+  );
 }
