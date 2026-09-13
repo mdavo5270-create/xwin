@@ -12,6 +12,7 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
           <Link href="/analyses">Analyses</Link>
           <Link href="/resultats">Résultats</Link>
           <Link href="/premium">Premium</Link>
+          <Link href="/a-propos">À propos</Link>
         </nav>
         <div className="pub-auth">
           {member ? <Link className="btn-sm" href="/app">Espace</Link> : (
@@ -34,8 +35,11 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
         <span>18+ · Analyse, pas un bookmaker</span>
         <Link href="/faq">FAQ</Link>
         <Link href="/contact">Contact</Link>
+        <Link href="/a-propos">À propos</Link>
         <Link href="/mentions-legales">Mentions</Link>
         <Link href="/conditions">Conditions</Link>
+        <Link href="/confidentialite">Confidentialité</Link>
+        <Link href="/politique-remboursement">Remboursement</Link>
         <Link href="/jeu-responsable">Jeu responsable</Link>
       </footer>
     </div>
