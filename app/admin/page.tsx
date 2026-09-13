@@ -8,16 +8,15 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   const configured = isAdminConfigured();
   const ok = await isAdmin();
-  const pronos = ok ? listAllPronos() : [];
-  const montantes = ok ? listAllMontantes() : [];
+  const pronos = ok ? await listAllPronos() : [];
+  const montantes = ok ? await listAllMontantes() : [];
 
   if (!configured) {
     return (
       <main className="wrap">
         <h1>Admin</h1>
         <p className="empty">
-          Ajoute la variable <code>ADMIN_SECRET</code> (12+ caractères) dans Vercel → Project → Settings →
-          Environment Variables, puis redeploie.
+          Ajoute la variable <code>ADMIN_SECRET</code> dans Vercel, puis redeploie.
         </p>
       </main>
     );
@@ -47,7 +46,7 @@ export default async function AdminPage() {
         </form>
       </div>
       <p className="muted">
-        Tu crées le match, le prono et le pourquoi. Le public ne voit que ce que tu publies.
+        Tu crées le match, le prono et le pourquoi. Le public ne voit que ce que tu publies. Stockage Neon.
       </p>
 
       <section className="card" style={{ marginTop: "1rem" }}>

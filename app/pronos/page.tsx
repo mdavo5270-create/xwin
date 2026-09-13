@@ -4,8 +4,8 @@ import { listPublishedPronos } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
-export default function PronosPage() {
-  const pronos = listPublishedPronos();
+export default async function PronosPage() {
+  const pronos = await listPublishedPronos();
   return (
     <main className="wrap">
       <h1>Pronos</h1>

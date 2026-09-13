@@ -4,9 +4,9 @@ import { listOpenMontantes, listPublishedPronos } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  const pronos = listPublishedPronos().slice(0, 6);
-  const montantes = listOpenMontantes().slice(0, 3);
+export default async function HomePage() {
+  const pronos = (await listPublishedPronos()).slice(0, 6);
+  const montantes = (await listOpenMontantes()).slice(0, 3);
   return (
     <main className="wrap">
       <p className="muted" style={{ letterSpacing: "0.08em", textTransform: "uppercase", fontSize: "0.75rem" }}>

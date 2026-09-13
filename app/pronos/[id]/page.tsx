@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default async function PronoPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const p = getProno(id);
+  const p = await getProno(id);
   if (!p || p.status === "draft") notFound();
   return (
     <main className="wrap">

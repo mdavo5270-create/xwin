@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function SportPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   if (!SPORTS.some((s) => s.slug === slug)) notFound();
-  const pronos = listPublishedPronos(slug);
+  const pronos = await listPublishedPronos(slug);
   return (
     <main className="wrap">
       <h1>{sportLabel(slug)}</h1>
