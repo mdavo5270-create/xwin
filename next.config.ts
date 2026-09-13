@@ -13,8 +13,9 @@ const nextConfig: NextConfig = {
       { source: "/abonnements", destination: "/premium", permanent: false },
       { source: "/aide", destination: "/faq", permanent: false },
       { source: "/legal", destination: "/mentions-legales", permanent: false },
-      { source: "/montantes", destination: "/premium", permanent: false },
-      { source: "/montantes/:id", destination: "/premium", permanent: false },
+      { source: "/splash", destination: "/", permanent: false },
+      { source: "/onboarding", destination: "/inscription", permanent: false },
+      { source: "/notifications", destination: "/app/notifications", permanent: false },
     ];
   },
 };

@@ -1,7 +1,9 @@
+import Image from "next/image";
 import Link from "next/link";
 import { logoutMember } from "@/lib/members";
 import { redirect } from "next/navigation";
 import type { Member } from "@/lib/types";
+import logo from "@/public/logo-full.png";
 
 async function logoutAction() {
   "use server";
@@ -13,7 +15,9 @@ export function AppChrome({ member, children }: { member: Member; children: Reac
   return (
     <div className="app">
       <aside className="side">
-        <Link className="logo" href="/app">XWIN</Link>
+        <Link className="logo" href="/app">
+          <Image src={logo} alt="XWIN" />
+        </Link>
         <nav>
           <Link href="/app">Tableau de bord</Link>
           <Link href="/app/pronostics">Pronostics</Link>
