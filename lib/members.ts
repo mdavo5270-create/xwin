@@ -3,6 +3,7 @@ import { createHmac, randomBytes, randomUUID, scryptSync, timingSafeEqual } from
 import { sql } from "./db";
 import { ensureSchema } from "./schema";
 import { safeCompareEqualLength } from "./safe-compare";
+import { rateLimit } from "./rate-limit";
 import type { Member } from "./types";
 
 const COOKIE = "xwin_member";
@@ -31,6 +32,10 @@ function sign(payload: string) {
 }
 
 export async function registerMember(name: string, email: string, password: string) {
+  const limited = await rateLimit("register", 5, 60 * 60);
+  if (!limited.ok) {
+    return { ok: false as const, error: "Trop de tentatives. Réessaie dans quelques minutes." };
+  }
   await ensureSchema();
   const clean = email.trim().toLowerCase();
   if (!clean || !password || password.length < 8 || !name.trim()) {
@@ -48,6 +53,10 @@ export async function registerMember(name: string, email: string, password: stri
 }
 
 export async function loginMember(email: string, password: string) {
+  const limited = await rateLimit("member-login", 8, 10 * 60);
+  if (!limited.ok) {
+    return { ok: false as const, error: "Trop de tentatives. Réessaie dans quelques minutes." };
+  }
   await ensureSchema();
   const clean = email.trim().toLowerCase();
   const rows = await sql()`select id, email, name, password_hash from users where email = ${clean} limit 1`;

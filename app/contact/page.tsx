@@ -2,7 +2,7 @@ import { PublicChrome } from "@/components/PublicChrome";
 import { getMember } from "@/lib/members";
 import { contactAction } from "./actions";
 
-export default async function ContactPage({ searchParams }: { searchParams: Promise<{ ok?: string }> }) {
+export default async function ContactPage({ searchParams }: { searchParams: Promise<{ ok?: string; err?: string }> }) {
   const member = await getMember();
   const q = await searchParams;
   return (
@@ -10,6 +10,7 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
       <main className="wrap">
         <h1>Contact</h1>
         {q.ok ? <p className="card">Message enregistré.</p> : null}
+        {q.err ? <p className="err">{q.err}</p> : null}
         <form action={contactAction} className="card">
           <label>Nom<input name="name" required /></label>
           <label>Email<input name="email" type="email" required /></label>
