@@ -1,8 +1,23 @@
 import { countUsers } from "@/lib/admin-data";
 import { listAllPronos } from "@/lib/store";
+import { computePerformance } from "@/lib/performance";
+
 export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const users = await countUsers();
-  const pronos = await listAllPronos();
-  return (<><h1>Statistiques</h1><div className="grid two"><div className="card">Utilisateurs {users}</div><div className="card">Pronos {pronos.length}</div></div></>);
+  const s = computePerformance(await listAllPronos());
+  return (
+    <>
+      <h1>Statistiques</h1>
+      <div className="grid two">
+        <div className="card">Utilisateurs {users}</div>
+        <div className="card">Publiés {s.published}</div>
+        <div className="card">Soldés {s.settled}</div>
+        <div className="card">Taux {s.rate === null ? "—" : `${s.rate}%`}</div>
+        <div className="card">Cote moy. {s.avgOdd ?? "—"}</div>
+        <div className="card">{s.sampleOk ? "Échantillon ≥ 30" : "Échantillon insuffisant"}</div>
+      </div>
+    </>
+  );
 }

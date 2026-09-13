@@ -18,9 +18,12 @@ function mapProno(r: Record<string, unknown>): Prono {
     pick: String(r.pick),
     rationale: String(r.rationale),
     status: r.status as Prono["status"],
-    result: r.result as Prono["result"],
+    result: (r.result as Prono["result"]) ?? "pending",
     followCount: Number(r.follow_count ?? 0),
     isPaid: Boolean(r.is_paid),
+    odd: String(r.odd ?? ""),
+    confidence: String(r.confidence ?? ""),
+    stakeUnits: String(r.stake_units ?? "1"),
     createdAt: new Date(String(r.created_at)).toISOString(),
   };
 }
@@ -38,9 +41,7 @@ function mapMontante(r: Record<string, unknown>): Montante {
   };
 }
 export async function listPublishedPronos(sport?: string) {
-  if (!hasDatabase()) {
-    return mem().pronos.filter((p) => p.status !== "draft" && (!sport || p.sport === sport));
-  }
+  if (!hasDatabase()) return mem().pronos.filter((p) => p.status !== "draft" && (!sport || p.sport === sport));
   const rows = sport
     ? await sql()`select * from pronos where status <> 'draft' and sport = ${sport} order by created_at desc`
     : await sql()`select * from pronos where status <> 'draft' order by created_at desc`;
@@ -59,10 +60,22 @@ export async function createProno(input: Omit<Prono, "id" | "followCount" | "cre
   const row: Prono = { ...input, id: randomUUID(), followCount: 0, result: "pending", createdAt: new Date().toISOString() };
   if (!hasDatabase()) { mem().pronos.unshift(row); return row; }
   await sql()`
-    insert into pronos (id, sport, competition, event_name, kickoff, pick, rationale, status, result, follow_count, created_at, is_paid)
-    values (${row.id}, ${row.sport}, ${row.competition}, ${row.eventName}, ${row.kickoff}, ${row.pick}, ${row.rationale}, ${row.status}, ${row.result}, ${row.followCount}, ${row.createdAt}, ${row.isPaid})
+    insert into pronos (id, sport, competition, event_name, kickoff, pick, rationale, status, result, follow_count, created_at, is_paid, odd, confidence, stake_units)
+    values (${row.id}, ${row.sport}, ${row.competition}, ${row.eventName}, ${row.kickoff}, ${row.pick}, ${row.rationale}, ${row.status}, ${row.result}, ${row.followCount}, ${row.createdAt}, ${row.isPaid}, ${row.odd}, ${row.confidence}, ${row.stakeUnits})
   `;
   return row;
+}
+export async function settleProno(id: string, result: Prono["result"]) {
+  const current = await getProno(id);
+  if (!current) return null;
+  if (!hasDatabase()) {
+    current.result = result;
+    current.status = result === "pending" ? "published" : "settled";
+    return current;
+  }
+  const status = result === "pending" ? "published" : "settled";
+  await sql()`update pronos set result = ${result}, status = ${status} where id = ${id}`;
+  return getProno(id);
 }
 export async function followProno(id: string) {
   const current = await getProno(id);
