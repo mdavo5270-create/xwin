@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { isAdmin, loginAdmin, logoutAdmin } from "@/lib/admin-auth";
 import { createMontante, createProno } from "@/lib/store";
+import { ensureSchema } from "@/lib/schema";
 
 export async function loginAction(form: FormData) {
   const password = String(form.get("password") ?? "");
@@ -19,6 +20,7 @@ export async function logoutAction() {
 
 export async function createPronoAction(form: FormData) {
   if (!(await isAdmin())) redirect("/admin");
+  await ensureSchema();
   await createProno({
     sport: String(form.get("sport") ?? ""),
     competition: String(form.get("competition") ?? "").trim(),
@@ -27,6 +29,7 @@ export async function createPronoAction(form: FormData) {
     pick: String(form.get("pick") ?? "").trim(),
     rationale: String(form.get("rationale") ?? "").trim(),
     status: "published",
+    isPaid: form.get("isPaid") === "on",
   });
   revalidatePath("/");
   revalidatePath("/pronos");
