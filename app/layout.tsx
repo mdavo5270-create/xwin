@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, IBM_Plex_Mono } from "next/font/google";
+import { Syne, Manrope, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 
-const archivo = Archivo({ subsets: ["latin"], variable: "--font-sans" });
-const plexMono = IBM_Plex_Mono({
+const display = Syne({ subsets: ["latin"], variable: "--font-display" });
+const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });
+const mono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   variable: "--font-mono",
@@ -11,18 +12,18 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "XWIN",
-  description: "Analyse sportive structurée — pronostics et performances vérifiables",
+  description: "Bureau d’analyse sportive — tickets, cotes, historique public",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0d1013",
+  themeColor: "#07080a",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${archivo.variable} ${plexMono.variable}`}>
+    <html lang="fr" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
       <body>{children}</body>
     </html>
   );
