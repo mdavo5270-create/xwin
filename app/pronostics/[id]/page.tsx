@@ -4,6 +4,7 @@ import { PublicChrome } from "@/components/PublicChrome";
 import { getMember } from "@/lib/members";
 import { sportLabel } from "@/lib/sports";
 import { getProno } from "@/lib/store";
+import { formatDateTime } from "@/lib/format-date";
 import { favoriteAction } from "@/app/app/favoris/actions";
 import { followAction } from "./actions";
 
@@ -23,7 +24,7 @@ export default async function PronosticDetail({ params }: { params: Promise<{ id
         <h1>{p.eventName}</h1>
         <span className={p.isPaid ? "badge pay" : "badge"}>{p.isPaid ? "Premium" : "Gratuit"}</span>
         {p.kickoff ? <p className="muted">Coup d’envoi {p.kickoff}</p> : null}
-        <p className="muted">Publié {new Date(p.createdAt).toLocaleString("fr-FR")}</p>
+        <p className="muted">Publié {formatDateTime(p.createdAt)}</p>
         <section className="card" style={{ marginTop: "1rem" }}>
           <h2>Pronostic</h2>
           {locked ? (

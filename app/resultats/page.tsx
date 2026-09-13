@@ -3,6 +3,7 @@ import { getMember } from "@/lib/members";
 import { listPublishedPronos } from "@/lib/store";
 import { ensureSchema } from "@/lib/schema";
 import { computePerformance } from "@/lib/performance";
+import { formatDateTime } from "@/lib/format-date";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,7 @@ export default async function ResultatsPage() {
             {all.map((p) => (
               <div className="card" key={p.id}>
                 <strong>{p.eventName}</strong>
-                <div className="muted">{new Date(p.createdAt).toLocaleString("fr-FR")} · {p.pick} · cote {p.odd || "—"} · {p.result}</div>
+                <div className="muted">{formatDateTime(p.createdAt)} · {p.pick} · cote {p.odd || "—"} · {p.result}</div>
               </div>
             ))}
           </div>
