@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { createHmac, randomBytes, randomUUID, scryptSync, timingSafeEqual } from "crypto";
 import { sql } from "./db";
 import { ensureSchema } from "./schema";
+import { safeCompareEqualLength } from "./safe-compare";
 import type { Member } from "./types";
 
 const COOKIE = "xwin_member";
@@ -80,7 +81,7 @@ export async function getMember(): Promise<Member | null> {
   const raw = jar.get(COOKIE)?.value;
   if (!raw || !secret()) return null;
   const [payload, sig] = raw.split(".");
-  if (!payload || !sig || sign(payload) !== sig) return null;
+  if (!payload || !sig || !safeCompareEqualLength(sign(payload), sig)) return null;
   try {
     const data = JSON.parse(Buffer.from(payload, "base64url").toString());
     if (!data?.id || data.exp < Date.now()) return null;
