@@ -1,81 +1,67 @@
 import Link from "next/link";
 import { PublicChrome } from "@/components/PublicChrome";
+import { PronoCard } from "@/components/PronoCard";
 import { getMember } from "@/lib/members";
 import { listPublishedPronos } from "@/lib/store";
 import { ensureSchema } from "@/lib/schema";
 import { computePerformance } from "@/lib/performance";
-import { sportLabel } from "@/lib/sports";
-import { formatDateTime } from "@/lib/format-date";
 
 export const dynamic = "force-dynamic";
-
-function Card({ p, hidePick }: { p: Awaited<ReturnType<typeof listPublishedPronos>>[number]; hidePick?: boolean }) {
-  return (
-    <Link className="card" href={`/pronostics/${p.id}`}>
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-        <span className="badge">{sportLabel(p.sport)}</span>
-        <span className={p.isPaid ? "badge pay" : "badge"}>{p.isPaid ? "✦ Premium" : "Gratuit"}</span>
-      </div>
-      <p className="muted">{p.competition}</p>
-      <h3>{p.eventName}</h3>
-      <p className="muted">{p.kickoff || formatDateTime(p.createdAt)}</p>
-      <p>{hidePick || p.isPaid ? "Analyse exclusive" : p.pick}</p>
-    </Link>
-  );
-}
 
 export default async function HomePage() {
   await ensureSchema();
   const member = await getMember();
   const all = await listPublishedPronos();
-  const free = all.filter((p) => !p.isPaid);
-  const paid = all.filter((p) => p.isPaid);
+  const open = all.filter((p) => p.result === "pending");
   const s = computePerformance(all);
+  const featured = open[0] ?? all[0];
   return (
     <PublicChrome member={member}>
       <section className="hero">
         <div>
-          <p className="kicker">Analyse · Stratégie · Performance</p>
-          <h1>Des analyses. Des pronostics. Une stratégie.</h1>
-          <p>XWIN publie uniquement ce que l’équipe a saisi. Football, basket, tennis, esport — sans stats inventées.</p>
+          <p className="kicker">Bureau d’analyse · Football d’abord</p>
+          <h1>{featured ? featured.eventName : "Le prochain ticket sort d’ici."}</h1>
+          <p>
+            {featured
+              ? `${featured.competition} · ${featured.isPaid ? "Ticket premium" : "Ticket public"} · unités affichées, résultat laissé public après coup.`
+              : "XWIN ne remplit pas l’accueil avec des stats fictives. Le premier ticket publié devient le hero."}
+          </p>
           <div className="cta-row">
-            <Link className="btn" href="/pronostics">Découvrir les pronostics</Link>
-            <Link className="btn ghost" href="/premium">Voir les offres</Link>
+            <Link className="btn" href={featured ? `/pronostics/${featured.id}` : "/pronostics"}>
+              {featured ? "Ouvrir le ticket" : "Voir le catalogue"}
+            </Link>
+            <Link className="btn ghost" href="/inscription">Créer un compte</Link>
           </div>
         </div>
         <aside className="perf">
           <p className="kicker">Performance</p>
-          <strong>{s.rate === null ? "—" : `${s.rate}%`}</strong>
-          <p className="muted">Réussite sur {s.settled} soldés</p>
+          <strong>{s.rate === null ? "n.d." : `${s.rate}%`}</strong>
+          <p className="muted">
+            {s.settled === 0
+              ? "Aucun ticket soldé — le taux apparaît au premier résultat."
+              : `Réussite sur ${s.settled} soldés`}
+          </p>
           <Link href="/resultats">Historique →</Link>
         </aside>
       </section>
       <main className="wrap">
-        <h2>Derniers pronostics</h2>
-        {all.length === 0 ? <p className="empty">Aucun pronostic disponible.</p> : (
-          <div className="grid two">{all.slice(0, 4).map((p) => <Card key={p.id} p={p} />)}</div>
+        <h2>Tickets ouverts</h2>
+        {open.length === 0 ? (
+          <p className="empty">Pas de ticket en cours. Les publications arrivent avant le coup d’envoi, pas en lot décoratif.</p>
+        ) : (
+          <div className="grid two">{open.slice(0, 4).map((p) => <PronoCard key={p.id} p={p} hidePick={p.isPaid} />)}</div>
         )}
-        <h2>Pronostics gratuits</h2>
-        {free.length === 0 ? <p className="empty">Pas encore de prono gratuit.</p> : (
-          <div className="grid two">{free.slice(0, 4).map((p) => <Card key={p.id} p={p} />)}</div>
-        )}
-        <h2>Pronostics Premium</h2>
-        {paid.length === 0 ? <p className="empty">Pas encore de prono premium.</p> : (
-          <div className="grid two">{paid.slice(0, 4).map((p) => <Card key={p.id} p={p} hidePick />)}</div>
-        )}
-        <h2>Pourquoi XWIN</h2>
+        <h2>Méthode</h2>
         <div className="grid three">
-          <div className="card"><h3>Pick + pourquoi</h3><p className="muted">Chaque publication a une analyse saisie par l’équipe.</p></div>
-          <div className="card"><h3>Historique public</h3><p className="muted">Hits et misses. Rien n’est retiré après coup.</p></div>
-          <div className="card"><h3>Gratuit et premium</h3><p className="muted">Le premium se débloque plus tard. Paiement encore off.</p></div>
+          <div className="card"><h3>Un pick, une raison</h3><p className="muted">Cote, unités, texte d’analyse. Rien d’autre sur la carte.</p></div>
+          <div className="card"><h3>Soldé = public</h3><p className="muted">Hit, miss ou void restent visibles. On ne retire pas un raté.</p></div>
+          <div className="card"><h3>Football d’abord</h3><p className="muted">Les autres sports n’apparaissent que lorsqu’un ticket existe.</p></div>
         </div>
-        <h2>À propos de l’expert</h2>
+        <h2>L’équipe</h2>
         <section className="card">
-          <p>XWIN est une plateforme d’analyse, pas un bookmaker. Le portrait détaillé se renseigne en admin, pas ici.</p>
-          <Link href="/a-propos">Lire à propos →</Link>
+          <p>Cellule d’analyse XWIN. Pas un bookmaker, pas un canal Telegram déguisé.</p>
+          <Link href="/a-propos">Méthode et cadre →</Link>
         </section>
-        <h2>Rejoindre XWIN</h2>
-        <Link className="btn" href="/inscription">Créer un compte</Link>
       </main>
     </PublicChrome>
   );

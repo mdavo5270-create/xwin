@@ -1,4 +1,5 @@
 import { sql } from "./db";
+import { ensureLaunchTickets } from "./bootstrap";
 
 let ready = false;
 
@@ -29,4 +30,5 @@ export async function ensureSchema() {
     id uuid PRIMARY KEY, actor text NOT NULL, action text NOT NULL,
     resource text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`;
   ready = true;
+  await ensureLaunchTickets();
 }
