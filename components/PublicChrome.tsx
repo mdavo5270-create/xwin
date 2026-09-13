@@ -22,7 +22,7 @@ export function PublicChrome({
         </nav>
         <div className="pub-auth">
           {member ? (
-            <Link href="/app">Espace</Link>
+            <Link className="btn-sm" href="/app">Espace</Link>
           ) : (
             <>
               <Link href="/connexion">Connexion</Link>
@@ -33,13 +33,18 @@ export function PublicChrome({
       </header>
       <div className="site-body">{children}</div>
       <footer className="pub-foot">
-        <span>18+ · Analyses, pas un bookmaker</span>
-        <Link href="/faq">FAQ</Link>
-        <Link href="/contact">Contact</Link>
-        <Link href="/mentions-legales">Mentions</Link>
-        <Link href="/conditions">Conditions</Link>
-        <Link href="/confidentialite">Confidentialité</Link>
-        <Link href="/jeu-responsable">Jeu responsable</Link>
+        <div>
+          <strong>XWIN</strong>
+          <p>Analyses. Pronostics. Stratégie. Pas un bookmaker.</p>
+        </div>
+        <div className="pub-foot-links">
+          <Link href="/faq">FAQ</Link>
+          <Link href="/contact">Contact</Link>
+          <Link href="/mentions-legales">Mentions</Link>
+          <Link href="/conditions">Conditions</Link>
+          <Link href="/confidentialite">Confidentialité</Link>
+          <Link href="/jeu-responsable">18+ jeu responsable</Link>
+        </div>
       </footer>
     </div>
   );

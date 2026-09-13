@@ -15,6 +15,9 @@ export default async function HomePage() {
   return (
     <PublicChrome member={member}>
       <section className="hero">
+        <p className="muted" style={{ letterSpacing: ".18em", textTransform: "uppercase", fontSize: ".72rem" }}>
+          Plateforme d’analyses
+        </p>
         <h1>Des analyses. Des pronostics. Une stratégie.</h1>
         <p>XWIN publie uniquement ce que l’équipe a réellement saisi. Pas de fiches fictives.</p>
         <div className="cta-row">
@@ -27,7 +30,7 @@ export default async function HomePage() {
         {all.length === 0 ? <p className="empty">Aucun prono publié pour l’instant.</p> : (
           <div className="grid two">
             {all.slice(0, 6).map((p) => (
-              <Link key={p.id} className="card" href={`/pronostics/${p.id}`} style={{ color: "inherit", textDecoration: "none" }}>
+              <Link key={p.id} className="card" href={`/pronostics/${p.id}`}>
                 <span className={p.isPaid ? "badge pay" : "badge"}>{p.isPaid ? "Premium" : "Gratuit"}</span>
                 <div className="muted">{p.competition}</div>
                 <strong>{p.eventName}</strong>
@@ -38,7 +41,7 @@ export default async function HomePage() {
         <h2>Pronostics gratuits</h2>
         {free.length === 0 ? <p className="empty">Pas encore de prono gratuit.</p> : (
           <div className="grid two">{free.map((p) => (
-            <Link key={p.id} className="card" href={`/pronostics/${p.id}`} style={{ color: "inherit", textDecoration: "none" }}>
+            <Link key={p.id} className="card" href={`/pronostics/${p.id}`}>
               <strong>{p.eventName}</strong><div>{p.pick}</div>
             </Link>
           ))}</div>
@@ -46,7 +49,7 @@ export default async function HomePage() {
         <h2>Pronostics premium</h2>
         {paid.length === 0 ? <p className="empty">Pas encore de prono premium.</p> : (
           <div className="grid two">{paid.map((p) => (
-            <Link key={p.id} className="card" href={`/pronostics/${p.id}`} style={{ color: "inherit", textDecoration: "none" }}>
+            <Link key={p.id} className="card" href={`/pronostics/${p.id}`}>
               <strong>{p.eventName}</strong><div className="muted">Analyse verrouillée</div>
             </Link>
           ))}</div>
