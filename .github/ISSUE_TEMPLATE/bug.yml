@@ -1,0 +1,24 @@
+name: Bug
+description: Signaler un défaut
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Description
+      description: Que se passe-t-il ?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Étapes pour reproduire
+    validations:
+      required: true
+  - type: dropdown
+    id: env
+    attributes:
+      label: Environnement
+      options: [Development, Preview, Production, Inconnu]

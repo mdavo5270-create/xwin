@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+.yarn/
+.npm/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Env & secrets — never commit real values
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+id_rsa*
+credentials.json
+service-account*.json
+
+# Build / cache
+dist/
+build/
+.next/
+.nuxt/
+.turbo/
+.cache/
+out/
+coverage/
+*.tsbuildinfo
+
+# IDE / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Vercel local
+.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*

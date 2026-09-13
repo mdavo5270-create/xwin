@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  foundation:
+    name: Foundation checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Guard — no committed secrets
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -E '(^|/)\.env($|\.)' | grep -v '\.example'; then
+            echo "Fichier .env versionné détecté" >&2
+            exit 1
+          fi
+          echo "OK: pas de .env committé"
+
+      - name: Detect app manifest
+        id: manifest
+        run: |
+          if [ -f package.json ]; then
+            echo "has_node=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_node=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node
+        if: steps.manifest.outputs.has_node == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install
+        if: steps.manifest.outputs.has_node == 'true'
+        run: npm ci
+
+      - name: Lint
+        if: steps.manifest.outputs.has_node == 'true'
+        run: npm run lint --if-present
+
+      - name: Typecheck
+        if: steps.manifest.outputs.has_node == 'true'
+        run: npm run typecheck --if-present
+
+      - name: Test
+        if: steps.manifest.outputs.has_node == 'true'
+        run: npm test --if-present
+
+      - name: Build
+        if: steps.manifest.outputs.has_node == 'true'
+        run: npm run build --if-present
+
+      - name: Placeholder when no app yet
+        if: steps.manifest.outputs.has_node != 'true'
+        run: |
+          echo "Pas encore de package.json — CI fondation uniquement."
+          echo "Pipeline cible: install → lint → typecheck → test → build → security."
