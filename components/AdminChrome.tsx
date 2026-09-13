@@ -6,6 +6,7 @@ const LINKS = [
   ["/admin", "Vue générale"],
   ["/admin/users", "Utilisateurs"],
   ["/admin/predictions", "Pronostics"],
+  ["/admin/automation", "Automatisation"],
   ["/admin/results", "Résultats"],
   ["/admin/analyses", "Analyses"],
   ["/admin/sports", "Sports"],
