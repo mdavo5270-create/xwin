@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PublicChrome } from "@/components/PublicChrome";
 import { getMember } from "@/lib/members";
+import "../browse.css";
 
 export default async function PremiumPage() {
   const member = await getMember();
