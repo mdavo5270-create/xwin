@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { loginAction } from "@/app/login/actions";
+import { loginAction } from "./actions";
 
 export default async function ConnexionPage({ searchParams }: { searchParams: Promise<{ err?: string; next?: string }> }) {
   const q = await searchParams;
