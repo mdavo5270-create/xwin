@@ -1,26 +1,23 @@
 # XWIN
 
-Plateforme UK de compétitions prize **basées sur le skill**. Statut : **scaffolding web** — pas encore de comptes, tirages ou paiements.
+Deux portails :
 
-- Dépôt : [mdavo5270-create/xwin](https://github.com/mdavo5270-create/xwin)
-- Prod : https://xwin-staiglobal0-6471.vercel.app
+- Public : `/` `/pronos` `/sports/[section]` `/montantes`
+- Admin : `/admin` — création des pronos (match, pick, pourquoi) et des montantes (paliers, cadence, prix)
+
+Aucun match fictif n’est préchargé. Le public est vide tant que l’admin n’a rien publié.
+
+## Production — à mettre dans Vercel
+
+1. `ADMIN_SECRET` — mot de passe équipe (12+ caractères)
+2. Base persistante (Neon / Vercel Postgres) — **obligatoire** dès que tu publies pour de vrai : le store actuel vit en mémoire serveur et se vide au redeploy.
+3. Stripe plus tard pour l’encaissement des montantes.
 
 ## Local
 
 ```bash
-git clone https://github.com/mdavo5270-create/xwin.git
-cd xwin
 cp .env.example .env.local
+# ADMIN_SECRET=change-me-now
 npm install
 npm run dev
 ```
-
-## Scripts
-
-- `npm run dev` — Next.js
-- `npm run typecheck`
-- `npm run build`
-
-## Hors périmètre (pas encore)
-
-Compétitions, quiz/skill games, paiements Stripe, comptes, voie postale, charity split.
