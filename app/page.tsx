@@ -5,7 +5,7 @@ import { getMember } from "@/lib/members";
 import { listPublishedPronos } from "@/lib/store";
 import { ensureSchema } from "@/lib/schema";
 import { computePerformance } from "@/lib/performance";
-import "../browse.css";
+import "./browse.css";
 
 export const dynamic = "force-dynamic";
 
