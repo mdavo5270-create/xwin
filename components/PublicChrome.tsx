@@ -1,14 +1,12 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { Member } from "@/lib/types";
-import logo from "@/public/logo-full.png";
 
 export function PublicChrome({ member, children }: { member: Member | null; children: React.ReactNode }) {
   return (
     <div className="site">
       <header className="pub-head">
         <Link className="logo" href="/">
-          <Image src={logo} alt="XWIN" priority />
+          <img src="/logo-full.png" alt="XWIN" width={120} height={44} />
         </Link>
         <nav className="pub-nav">
           <Link href="/">Accueil</Link>

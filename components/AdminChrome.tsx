@@ -1,6 +1,4 @@
-import Image from "next/image";
 import Link from "next/link";
-import logo from "@/public/logo-full.png";
 
 const LINKS = [
   ["/admin", "Vue générale"],
@@ -28,7 +26,7 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
     <div className="app admin-app">
       <aside className="side">
         <Link className="logo admin-logo" href="/admin">
-          <Image src={logo} alt="XWIN" />
+          <img src="/logo-full.png" alt="XWIN" width={120} height={44} />
           <span className="admin-tag">Admin</span>
         </Link>
         <nav>
