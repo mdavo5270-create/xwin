@@ -1,11 +1,13 @@
 :root {
   color-scheme: dark;
-  --bg: #0b0f14;
+  --bg: #081015;
+  --card: #101820;
+  --line: #1e2b36;
   --fg: #e8eef5;
-  --muted: #9aa8b6;
-  --accent: #7dd3fc;
+  --muted: #8ea0b0;
+  --accent: #d4a017;
+  --teal: #3ecfbf;
 }
-
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; }
 body {
@@ -13,4 +15,47 @@ body {
   background: var(--bg);
   color: var(--fg);
 }
-a { color: var(--accent); }
+a { color: inherit; text-decoration: none; }
+.wrap { max-width: 72rem; margin: 0 auto; padding: 1rem 1.25rem 4rem; }
+nav.top, footer.bot {
+  display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+  border-bottom: 1px solid var(--line); padding: 0.9rem 1.25rem;
+}
+footer.bot { border-bottom: 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
+.brand { font-weight: 700; letter-spacing: 0.06em; }
+.muted { color: var(--muted); }
+.chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.chip, .btn, button, input, textarea, select {
+  font: inherit;
+}
+.chip {
+  border: 1px solid var(--line);
+  background: var(--card);
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+.chip.on { border-color: var(--accent); color: var(--accent); }
+.grid { display: grid; gap: 0.85rem; }
+@media (min-width: 720px) { .grid.cards { grid-template-columns: 1fr 1fr; } }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem;
+}
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--accent); color: #111; font-weight: 650;
+  border: 0; border-radius: 10px; padding: 0.65rem 1rem; cursor: pointer;
+}
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+label { display: grid; gap: 0.3rem; font-size: 0.85rem; color: var(--muted); margin-bottom: 0.75rem; }
+input, textarea, select {
+  background: #0b1319; color: var(--fg); border: 1px solid var(--line);
+  border-radius: 10px; padding: 0.6rem 0.7rem; width: 100%;
+}
+textarea { min-height: 8rem; }
+h1 { font-size: 1.7rem; margin: 0.3rem 0 0.6rem; }
+h2 { font-size: 1.15rem; margin: 0 0 0.6rem; }
+.empty { color: var(--muted); border: 1px dashed var(--line); border-radius: 14px; padding: 1.4rem; }
