@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default async function MontantePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const m = getMontante(id);
+  const m = await getMontante(id);
   if (!m || m.status !== "open") notFound();
   return (
     <main className="wrap">

@@ -19,7 +19,7 @@ export async function logoutAction() {
 
 export async function createPronoAction(form: FormData) {
   if (!(await isAdmin())) redirect("/admin");
-  createProno({
+  await createProno({
     sport: String(form.get("sport") ?? ""),
     competition: String(form.get("competition") ?? "").trim(),
     eventName: String(form.get("eventName") ?? "").trim(),
@@ -36,7 +36,7 @@ export async function createPronoAction(form: FormData) {
 
 export async function createMontanteAction(form: FormData) {
   if (!(await isAdmin())) redirect("/admin");
-  createMontante({
+  await createMontante({
     title: String(form.get("title") ?? "").trim(),
     cadence: form.get("cadence") === "monthly" ? "monthly" : "weekly",
     steps: Number(form.get("steps") ?? 0),

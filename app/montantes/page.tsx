@@ -3,8 +3,8 @@ import { listOpenMontantes } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
-export default function MontantesPage() {
-  const rows = listOpenMontantes();
+export default async function MontantesPage() {
+  const rows = await listOpenMontantes();
   return (
     <main className="wrap">
       <h1>Montantes</h1>
