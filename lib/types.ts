@@ -3,6 +3,12 @@ export type PronoResult = "pending" | "hit" | "miss";
 export type MontanteCadence = "weekly" | "monthly";
 export type MontanteStatus = "draft" | "open" | "closed";
 
+export type Member = {
+  id: string;
+  email: string;
+  name: string;
+};
+
 export type Prono = {
   id: string;
   sport: string;
@@ -14,6 +20,7 @@ export type Prono = {
   status: PronoStatus;
   result: PronoResult;
   followCount: number;
+  isPaid: boolean;
   createdAt: string;
 };
 
