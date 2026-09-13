@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { createHmac } from "crypto";
 import { safeCompare, safeCompareEqualLength } from "./safe-compare";
+import { rateLimit } from "./rate-limit";
 
 const COOKIE = "xwin_admin";
 const MAX_AGE_SECONDS = 60 * 60 * 12; // 12h
@@ -34,6 +35,12 @@ export async function isAdmin() {
 
 export async function loginAdmin(password: string) {
   if (!isAdminConfigured()) return false;
+  // 5 tentatives / 5 min / IP : suffisant pour un vrai admin qui se trompe,
+  // beaucoup trop lent pour du brute force. On échoue "silencieusement"
+  // (même résultat qu'un mauvais mot de passe) pour ne pas donner
+  // d'information distincte à un attaquant.
+  const limited = await rateLimit("admin-login", 5, 5 * 60);
+  if (!limited.ok) return false;
   if (!safeCompare(password, secret())) return false;
   const payload = Buffer.from(
     JSON.stringify({ exp: Date.now() + MAX_AGE_SECONDS * 1000 })
