@@ -3,6 +3,7 @@
   "framework": "nextjs",
   "installCommand": "npm install",
   "buildCommand": "npm run build",
+  "fluid": true,
   "crons": [
     {
       "path": "/api/cron/pronos",
