@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Syne, Manrope, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import "./mobile.css";
 
 const display = Syne({ subsets: ["latin"], variable: "--font-display" });
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans" });

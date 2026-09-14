@@ -1,0 +1,13 @@
+@media (max-width: 859px) {
+  .pub-head { padding: .75rem .9rem; }
+  .pub-head .logo img { height: 26px; }
+  .btn-sm { padding: .38rem .75rem; }
+  .wrap { padding-bottom: 6.2rem; }
+  .pub-foot {
+    padding: .9rem .9rem 5.6rem;
+    font-size: .72rem;
+    gap: .45rem .8rem;
+  }
+  .tile { min-height: 148px; padding: .9rem 1rem; }
+  .tile h3 { font-size: 1.12rem; }
+}
