@@ -52,8 +52,8 @@ export default async function HomePage() {
               <Link className="btn" href="/app">Accéder à mon espace</Link>
             ) : (
               <>
-                <Link className="btn" href="/inscription">Rejoindre</Link>
-                <Link className="btn ghost" href="/connexion">Entrer</Link>
+                <Link className="btn" href="/inscription">S’inscrire</Link>
+                <Link className="btn ghost" href="/connexion">Connexion</Link>
               </>
             )}
           </div>
