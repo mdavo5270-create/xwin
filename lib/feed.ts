@@ -4,10 +4,6 @@ import { matchKey } from "./matches";
 import type { Prono } from "./types";
 
 const MIN_PER_SPORT = 10;
-const HARD_SPORTS = new Set([
-  "rugby", "hockey", "formula-1", "mma", "volleyball", "handball",
-  "esport-lol", "esport-cs", "esport-valorant", "esport-dota",
-]);
 
 const LEAGUES: { id: string; sport: string; competition: string }[] = [
   { id: "4328", sport: "football", competition: "Premier League" },
@@ -17,18 +13,26 @@ const LEAGUES: { id: string; sport: string; competition: string }[] = [
   { id: "4331", sport: "football", competition: "Bundesliga" },
   { id: "4480", sport: "football", competition: "Ligue des champions" },
   { id: "4346", sport: "football", competition: "Ligue 2" },
-  { id: "4337", sport: "football", competition: "Eredivisie" },
-  { id: "4358", sport: "football", competition: "Primeira Liga" },
   { id: "4387", sport: "basketball", competition: "NBA" },
   { id: "4546", sport: "basketball", competition: "EuroLeague" },
+  { id: "4464", sport: "tennis", competition: "ATP" },
+  { id: "4517", sport: "tennis", competition: "WTA" },
 ];
 
-type NextEvent = {
-  strHomeTeam?: string;
-  strAwayTeam?: string;
-  strLeague?: string;
-  dateEvent?: string;
-  strTime?: string;
+const DAY_SPORTS: { api: string; sport: string }[] = [
+  { api: "Soccer", sport: "football" },
+  { api: "Basketball", sport: "basketball" },
+  { api: "Tennis", sport: "tennis" },
+  { api: "Ice Hockey", sport: "hockey" },
+];
+
+type Raw = {
+  sport: string;
+  competition: string;
+  home: string;
+  away: string;
+  day: string;
+  time: string;
 };
 
 export type FeedReport = {
@@ -38,14 +42,6 @@ export type FeedReport = {
   perSport: Record<string, number>;
 };
 
-async function nextEvents(leagueId: string): Promise<NextEvent[]> {
-  const url = `https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=${leagueId}`;
-  const res = await fetch(url, { next: { revalidate: 0 } });
-  if (!res.ok) return [];
-  const data = (await res.json()) as { events?: NextEvent[] };
-  return data.events ?? [];
-}
-
 function todayParis() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 }
@@ -54,13 +50,89 @@ function weekdayParis() {
   return new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Paris", weekday: "short" }).format(new Date());
 }
 
-function countTodayBySport(rows: Prono[]) {
-  const day = todayParis();
+function plusDays(iso: string, n: number) {
+  const d = new Date(`${iso}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+async function getJson(url: string) {
+  const res = await fetch(url, { next: { revalidate: 0 } });
+  if (!res.ok) return null;
+  return res.json() as Promise<Record<string, unknown>>;
+}
+
+function readEvents(data: Record<string, unknown> | null): Record<string, string>[] {
+  const raw = (data?.events || data?.event || []) as Record<string, string>[];
+  return Array.isArray(raw) ? raw : [];
+}
+
+function splitEventName(strEvent: string) {
+  const m = strEvent.split(/\s+vs\.?\s+/i);
+  if (m.length >= 2) return { home: m[0].trim(), away: m[1].trim() };
+  return { home: strEvent.trim(), away: "" };
+}
+
+function fromApi(ev: Record<string, string>, sport: string): Raw | null {
+  let home = (ev.strHomeTeam || "").trim();
+  let away = (ev.strAwayTeam || "").trim();
+  if (!home || !away) {
+    const parts = splitEventName(ev.strEvent || ev.strEventAlternate || "");
+    home = home || parts.home;
+    away = away || parts.away;
+  }
+  if (!home || !away) return null;
+  const day = (ev.dateEvent || "").slice(0, 10);
+  if (!day) return null;
+  return {
+    sport,
+    competition: ev.strLeague || "",
+    home,
+    away,
+    day,
+    time: (ev.strTime || "15:00:00").slice(0, 8),
+  };
+}
+
+async function collectFixtures(): Promise<Raw[]> {
+  const out: Raw[] = [];
+  const seen = new Set<string>();
+  const push = (row: Raw | null) => {
+    if (!row) return;
+    const k = `${row.sport}|${row.home.toLowerCase()}|${row.away.toLowerCase()}|${row.day}`;
+    if (seen.has(k)) return;
+    seen.add(k);
+    out.push(row);
+  };
+
+  for (const league of LEAGUES) {
+    const next = readEvents(await getJson(`https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=${league.id}`));
+    for (const ev of next) push(fromApi(ev, league.sport));
+    if (league.sport === "tennis") {
+      const year = todayParis().slice(0, 4);
+      const season = readEvents(await getJson(`https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=${league.id}&s=${year}`));
+      for (const ev of season) {
+        const row = fromApi(ev, league.sport);
+        if (row && row.day >= todayParis()) push(row);
+      }
+    }
+  }
+
+  const start = todayParis();
+  for (const spec of DAY_SPORTS) {
+    for (let i = 0; i < 10; i++) {
+      const day = plusDays(start, i);
+      const data = await getJson(`https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${day}&s=${encodeURIComponent(spec.api)}`);
+      for (const ev of readEvents(data)) push(fromApi(ev, spec.sport));
+    }
+  }
+  return out.sort((a, b) => `${a.day}${a.time}`.localeCompare(`${b.day}${b.time}`));
+}
+
+function countOpenBySport(rows: Prono[]) {
   const acc: Record<string, number> = {};
   for (const p of rows) {
-    const d = (p.kickoff || p.createdAt || "").slice(0, 10);
-    if (d !== day) continue;
-    if (HARD_SPORTS.has(p.sport)) continue;
+    if (p.result !== "pending") continue;
     acc[p.sport] = (acc[p.sport] ?? 0) + 1;
   }
   return acc;
@@ -72,54 +144,39 @@ function alreadyHave(existing: Prono[], eventName: string, kickoff: string, spor
   return existing.some((p) => matchKey(p) === key);
 }
 
-type Pattern = { homeWin: number; over: number; sample: number };
-
-function patternsFromHistory(settled: Prono[]): Pattern {
-  let home = 0, homeHit = 0, over = 0, overHit = 0;
-  for (const p of settled) {
-    const pick = (p.pick || "").toLowerCase();
-    if (pick.includes("1x2") && (pick.endsWith("· 1") || pick.endsWith(" 1"))) {
-      home += 1;
-      if (p.result === "hit") homeHit += 1;
-    }
-    if (pick.includes("2.5")) {
-      over += 1;
-      if (p.result === "hit") overHit += 1;
-    }
-  }
-  return {
-    homeWin: home ? homeHit / home : 0.55,
-    over: over ? overHit / over : 0.52,
-    sample: settled.length,
-  };
-}
-
-function easyTickets(sport: string, pattern: Pattern) {
-  if (sport === "basketball") {
+function easyTickets(sport: string, homeRate: number, overRate: number) {
+  if (sport === "tennis") {
     return [{
       pick: "Vainqueur · 1",
-      chance: Math.round(pattern.homeWin * 100),
-      rationale: "Base interne : favori domicile NBA/Euro. Marché simple, pas de total compliqué.",
+      chance: Math.round(homeRate * 100),
+      rationale: "Tête de série / joueur listé à gauche. Marché simple, pas de set exact.",
+    }];
+  }
+  if (sport === "basketball" || sport === "hockey") {
+    return [{
+      pick: "Vainqueur · 1",
+      chance: Math.round(homeRate * 100),
+      rationale: "Favori domicile. Pas de spread, pas de total tordu.",
     }];
   }
   const tickets = [];
-  if (pattern.homeWin >= 0.48) {
+  if (homeRate >= 0.48) {
     tickets.push({
       pick: "1X2 · 1",
-      chance: Math.round(pattern.homeWin * 100),
-      rationale: "Pattern interne XWIN : le 1 domicile reste le marché le plus simple à solder. On ne joue pas le 2 ni le score exact.",
+      chance: Math.round(homeRate * 100),
+      rationale: "1 domicile : marché le plus simple à solder.",
     });
     tickets.push({
       pick: "Double chance · 1X",
-      chance: Math.min(92, Math.round(pattern.homeWin * 100) + 18),
-      rationale: "Filet 1X. On évite le match ouvert. Ticket de sécurité du même match.",
+      chance: Math.min(92, Math.round(homeRate * 100) + 18),
+      rationale: "Filet 1X sur le même match.",
     });
   }
-  if (pattern.over >= 0.48) {
+  if (overRate >= 0.48) {
     tickets.push({
       pick: "Plus de 2.5 · Over 2.5",
-      chance: Math.round(pattern.over * 100),
-      rationale: "Second marché facile : total 2.5. Si notre historique interne tombe sous 48 %, ce ticket n’est plus posé.",
+      chance: Math.round(overRate * 100),
+      rationale: "Total 2.5, deuxième marché facile.",
     });
   }
   return tickets;
@@ -128,64 +185,49 @@ function easyTickets(sport: string, pattern: Pattern) {
 export async function ingestUpcomingFixtures(): Promise<FeedReport> {
   const existing = await listPublishedPronos();
   const settled = await listRecentSettledPronos(80);
-  const pattern = patternsFromHistory(settled);
-  const perSport = countTodayBySport(existing);
+  let homeN = 0, homeH = 0, overN = 0, overH = 0;
+  for (const p of settled) {
+    const pick = (p.pick || "").toLowerCase();
+    if (pick.includes("1x2") && pick.includes("1")) { homeN += 1; if (p.result === "hit") homeH += 1; }
+    if (pick.includes("2.5")) { overN += 1; if (p.result === "hit") overH += 1; }
+  }
+  const homeRate = homeN ? homeH / homeN : 0.55;
+  const overRate = overN ? overH / overN : 0.52;
+  const perSport = countOpenBySport(existing);
   const report: FeedReport = { created: 0, skipped: 0, leagues: [], perSport: { ...perSport } };
   const sunday = weekdayParis() === "Sun";
-  const seen = new Set<string>();
+  const fixtures = await collectFixtures();
+  report.leagues = [...new Set(fixtures.map((f) => f.competition).filter(Boolean))].slice(0, 20);
 
-  for (const league of LEAGUES) {
-    if (HARD_SPORTS.has(league.sport)) continue;
-    const have = perSport[league.sport] ?? 0;
-    const target = sunday && league.sport === "football" ? 16 : MIN_PER_SPORT;
-    if (have >= target) continue;
-    let events: NextEvent[] = [];
-    try {
-      events = await nextEvents(league.id);
-    } catch {
+  for (const row of fixtures) {
+    const target = sunday && row.sport === "football" ? 16 : MIN_PER_SPORT;
+    if ((perSport[row.sport] ?? 0) >= target) continue;
+    const eventName = `${row.home} vs ${row.away}`;
+    const kickoff = `${row.day}T${row.time}`;
+    if (alreadyHave(existing, eventName, kickoff, row.sport)) {
+      report.skipped += 1;
       continue;
     }
-    if (!events.length) continue;
-    report.leagues.push(league.competition);
-    for (const ev of events) {
-      if ((perSport[league.sport] ?? 0) >= target) break;
-      const home = (ev.strHomeTeam || "").trim();
-      const away = (ev.strAwayTeam || "").trim();
-      if (!home || !away) continue;
-      const eventName = `${home} vs ${away}`;
-      const day = ev.dateEvent || todayParis();
-      const time = (ev.strTime || "15:00:00").slice(0, 8);
-      const kickoff = `${day}T${time}`;
-      const stamp = `${league.sport}|${eventName.toLowerCase()}|${day}`;
-      if (seen.has(stamp) || alreadyHave(existing, eventName, kickoff, league.sport)) {
-        report.skipped += 1;
-        continue;
-      }
-      seen.add(stamp);
-      const tickets = easyTickets(league.sport, pattern);
-      if (!tickets.length) {
-        report.skipped += 1;
-        continue;
-      }
-      for (const [i, t] of tickets.entries()) {
-        await createProno({
-          sport: league.sport,
-          competition: ev.strLeague || league.competition,
-          eventName,
-          kickoff,
-          status: "published",
-          pick: t.pick,
-          rationale: t.rationale,
-          isPaid: i >= 2,
-          odd: `${t.chance}%`,
-          confidence: t.chance >= 70 ? "4" : "3",
-          stakeUnits: "1",
-        });
-        report.created += 1;
-        perSport[league.sport] = (perSport[league.sport] ?? 0) + 1;
-      }
-      existing.push({ eventName, kickoff, sport: league.sport, createdAt: kickoff } as Prono);
+    const tickets = easyTickets(row.sport, homeRate, overRate);
+    if (!tickets.length) { report.skipped += 1; continue; }
+    for (const [i, t] of tickets.entries()) {
+      await createProno({
+        sport: row.sport,
+        competition: row.competition || row.sport,
+        eventName,
+        kickoff,
+        status: "published",
+        pick: t.pick,
+        rationale: t.rationale,
+        isPaid: i >= 2,
+        odd: `${t.chance}%`,
+        confidence: t.chance >= 70 ? "4" : "3",
+        stakeUnits: "1",
+      });
+      report.created += 1;
+      perSport[row.sport] = (perSport[row.sport] ?? 0) + 1;
     }
+    existing.push({ eventName, kickoff, sport: row.sport, createdAt: kickoff, result: "pending" } as Prono);
   }
   report.perSport = perSport;
   return report;
@@ -193,10 +235,12 @@ export async function ingestUpcomingFixtures(): Promise<FeedReport> {
 
 export async function ensureDailyFeed() {
   const settings = await getSettings();
-  const day = todayParis();
-  if (settings.feed_day === day) return null;
+  const existing = await listPublishedPronos();
+  const open = countOpenBySport(existing.filter((p) => p.result === "pending"));
+  const need = ["football", "basketball", "tennis", "hockey"].some((s) => (open[s] ?? 0) < MIN_PER_SPORT);
+  if (settings.feed_day === todayParis() && !need) return null;
   const report = await ingestUpcomingFixtures();
-  await setSetting("feed_day", day);
+  await setSetting("feed_day", todayParis());
   await setSetting("feed_last", JSON.stringify(report));
   return report;
 }
