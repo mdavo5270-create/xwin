@@ -1,4 +1,4 @@
-import { PublicChrome } from "@/components/PublicChrome";
+import { HubShell } from "@/components/HubShell";
 import { MatchCard } from "@/components/MatchCard";
 import { getMember } from "@/lib/members";
 import { listPublishedPronos } from "@/lib/store";
@@ -23,24 +23,18 @@ export default async function PronosticsPage() {
     bySport.set(m.sport, list);
   }
   return (
-    <PublicChrome member={member}>
-      <main className="wrap programme">
-        <p className="kicker">Programme</p>
-        <h1>Tous les matchs</h1>
-        <p className="muted">
-          {open.length} fiche{open.length > 1 ? "s" : ""} match · {pending.length} ticket{pending.length > 1 ? "s" : ""}.
-          Plusieurs tickets sur le même match = une seule ligne ici.
-        </p>
+    <HubShell member={member} tab="/pronostics">
+      <div className="hub-body">
+        <h1>Sports</h1>
         {open.length === 0 ? (
           <p className="empty">Aucun match ouvert.</p>
         ) : [...bySport.entries()].map(([sport, list]) => (
-          <section key={sport} style={{ marginTop: "1.6rem" }}>
+          <section key={sport}>
             <h2>{sportLabel(sport)}</h2>
-            <p className="muted">{list.length} match{list.length > 1 ? "s" : ""} · {list.reduce((n, m) => n + m.tickets.length, 0)} tickets</p>
             <div className="fix-list">{list.map((m) => <MatchCard key={m.key} m={m} />)}</div>
           </section>
         ))}
-      </main>
-    </PublicChrome>
+      </div>
+    </HubShell>
   );
 }
