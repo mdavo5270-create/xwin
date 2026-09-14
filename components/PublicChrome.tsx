@@ -7,11 +7,11 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
   return (
     <div className="site">
       <header className="pub-head">
-        <Link className="logo" href="/">
+        <Link className="logo" href="/accueil">
           <Image src={logo} alt="XWIN" priority />
         </Link>
         <nav className="pub-nav">
-          <Link href="/">Accueil</Link>
+          <Link href="/accueil">Accueil</Link>
           <Link href="/montantes">Programmes</Link>
           <Link href="/pronostics">Match</Link>
           <Link href="/resultats">Historique</Link>
@@ -22,14 +22,14 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
           {member ? <Link className="btn-sm" href="/app">Espace</Link> : (
             <>
               <Link href="/connexion">Connexion</Link>
-              <Link className="btn-sm" href="/inscription">S’inscrire</Link>
+              <Link className="btn-sm" href="/connexion?tab=inscription">S’inscrire</Link>
             </>
           )}
         </div>
       </header>
       <div className="site-body">{children}</div>
       <nav className="pub-mobile">
-        <Link href="/">Accueil</Link>
+        <Link href="/accueil">Accueil</Link>
         <Link href="/montantes">Programmes</Link>
         <Link href="/pronostics">Match</Link>
         <Link href="/resultats">Historique</Link>
@@ -39,8 +39,8 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
       <footer className="pub-foot">
         <div className="foot-top">
           <div className="foot-brand">
-            <Link className="logo" href="/"><Image src={logo} alt="XWIN" /></Link>
-            <p>Bureau d’analyse sportive. Chaque pronostic publié reste public, résultat compris — pas de sélection des tickets gagnants après coup.</p>
+            <Link className="logo" href="/accueil"><Image src={logo} alt="XWIN" /></Link>
+            <p>Bureau d’analyse sportive. Chaque pronostic publié reste public, résultat compris.</p>
           </div>
           <div className="foot-cols">
             <div className="foot-col">
@@ -50,17 +50,15 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
               <Link href="/premium">Premium</Link>
               <Link href="/service">Service</Link>
               <Link href="/resultats">Résultats</Link>
-              <Link href="/analyses">Analyses</Link>
             </div>
             <div className="foot-col">
               <h4>Compte</h4>
               {member ? <Link href="/app">Mon espace</Link> : (
                 <>
                   <Link href="/connexion">Connexion</Link>
-                  <Link href="/inscription">S’inscrire</Link>
+                  <Link href="/connexion?tab=inscription">S’inscrire</Link>
                 </>
               )}
-              <Link href="/faq">FAQ</Link>
               <Link href="/contact">Contact</Link>
             </div>
             <div className="foot-col">
