@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { randomUUID } from "crypto";
 import { isAdmin, loginAdmin, logoutAdmin } from "@/lib/admin-auth";
-import { createMontante, createProno, settleProno } from "@/lib/store";
+import { createMontante, createProno, settleProno, updateMontante, updateProno } from "@/lib/store";
 import { createAnalysis } from "@/lib/editorial";
 import { ensureSchema } from "@/lib/schema";
 import { sql } from "@/lib/db";
@@ -16,40 +16,47 @@ export async function loginAction(form: FormData) {
   if (!ok) redirect(`${adminHref()}?err=1`);
   redirect(adminHref());
 }
-
 export async function logoutAction() {
   await logoutAdmin();
   redirect(adminHref());
 }
-
 async function log(action: string, resource: string) {
   await ensureSchema();
   await sql()`insert into audit_logs (id, actor, action, resource) values (${randomUUID()}, ${"admin"}, ${action}, ${resource})`;
 }
-
-export async function createPronoAction(form: FormData) {
-  if (!(await isAdmin())) redirect(adminHref());
-  await ensureSchema();
-  const created = await createProno({
+function pronoFromForm(form: FormData) {
+  return {
     sport: String(form.get("sport") ?? ""),
     competition: String(form.get("competition") ?? "").trim(),
     eventName: String(form.get("eventName") ?? "").trim(),
     kickoff: String(form.get("kickoff") ?? "").trim(),
     pick: String(form.get("pick") ?? "").trim(),
     rationale: String(form.get("rationale") ?? "").trim(),
-    status: "published",
     isPaid: form.get("isPaid") === "on",
     odd: String(form.get("odd") ?? "").trim(),
     confidence: String(form.get("confidence") ?? "").trim(),
     stakeUnits: String(form.get("stakeUnits") ?? "1").trim() || "1",
-  });
+  };
+}
+export async function createPronoAction(form: FormData) {
+  if (!(await isAdmin())) redirect(adminHref());
+  await ensureSchema();
+  const created = await createProno({ ...pronoFromForm(form), status: "published" });
   await log("publish_prono", created.id);
   revalidatePath("/");
   revalidatePath("/pronostics");
-  revalidatePath("/resultats");
   redirect(adminHref("predictions"));
 }
-
+export async function updatePronoAction(form: FormData) {
+  if (!(await isAdmin())) redirect(adminHref());
+  const id = String(form.get("id") ?? "");
+  if (!id) redirect(adminHref("predictions"));
+  await updateProno(id, pronoFromForm(form));
+  await log("update_prono", id);
+  revalidatePath("/");
+  revalidatePath("/pronostics");
+  redirect(adminHref("predictions"));
+}
 export async function settleAction(form: FormData) {
   if (!(await isAdmin())) redirect(adminHref());
   const id = String(form.get("id") ?? "");
@@ -60,7 +67,6 @@ export async function settleAction(form: FormData) {
   revalidatePath("/resultats");
   redirect(adminHref("results"));
 }
-
 export async function createAnalysisAction(form: FormData) {
   if (!(await isAdmin())) redirect(adminHref());
   await createAnalysis({
@@ -72,7 +78,6 @@ export async function createAnalysisAction(form: FormData) {
   revalidatePath("/analyses");
   redirect(adminHref("analyses"));
 }
-
 export async function createMontanteAction(form: FormData) {
   if (!(await isAdmin())) redirect(adminHref());
   await createMontante({
@@ -85,5 +90,21 @@ export async function createMontanteAction(form: FormData) {
     status: "open",
   });
   revalidatePath("/montantes");
-  redirect(adminHref());
+  redirect(adminHref("offers"));
+}
+export async function updateMontanteAction(form: FormData) {
+  if (!(await isAdmin())) redirect(adminHref());
+  const id = String(form.get("id") ?? "");
+  if (!id) redirect(adminHref("offers"));
+  await updateMontante(id, {
+    title: String(form.get("title") ?? "").trim(),
+    cadence: form.get("cadence") === "monthly" ? "monthly" : "weekly",
+    steps: Number(form.get("steps") ?? 0),
+    entryAmount: String(form.get("entryAmount") ?? "").trim(),
+    currency: String(form.get("currency") ?? "XOF").trim() || "XOF",
+    description: String(form.get("description") ?? "").trim(),
+    status: form.get("status") === "closed" ? "closed" : "open",
+  });
+  revalidatePath("/montantes");
+  redirect(adminHref("offers"));
 }

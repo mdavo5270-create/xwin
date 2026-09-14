@@ -55,26 +55,16 @@ export async function listPublishedPronosPage(opts: { sport?: string; limit: num
     return { rows: rows.slice(offset, offset + limit), total: rows.length };
   }
   const rows = sport
-    ? await sql()`
-        select *, count(*) over() as total_count from pronos
-        where status <> 'draft' and sport = ${sport}
-        order by created_at desc limit ${limit} offset ${offset}`
-    : await sql()`
-        select *, count(*) over() as total_count from pronos
-        where status <> 'draft'
-        order by created_at desc limit ${limit} offset ${offset}`;
+    ? await sql()`select *, count(*) over() as total_count from pronos where status <> 'draft' and sport = ${sport} order by created_at desc limit ${limit} offset ${offset}`
+    : await sql()`select *, count(*) over() as total_count from pronos where status <> 'draft' order by created_at desc limit ${limit} offset ${offset}`;
   const total = rows.length ? Number(rows[0].total_count) : 0;
   return { rows: rows.map((r) => mapProno(r as Record<string, unknown>)), total };
 }
 export async function listRecentSettledPronos(limit: number) {
   if (!hasDatabase()) {
-    return mem()
-      .pronos.filter((p) => p.status !== "draft" && (p.result === "hit" || p.result === "miss"))
-      .slice(0, limit);
+    return mem().pronos.filter((p) => p.status !== "draft" && (p.result === "hit" || p.result === "miss")).slice(0, limit);
   }
-  const rows = await sql()`
-    select * from pronos where status <> 'draft' and result in ('hit', 'miss')
-    order by created_at desc limit ${limit}`;
+  const rows = await sql()`select * from pronos where status <> 'draft' and result in ('hit', 'miss') order by created_at desc limit ${limit}`;
   return rows.map((r) => mapProno(r as Record<string, unknown>));
 }
 export async function countOpenPronosBySport() {
@@ -86,10 +76,7 @@ export async function countOpenPronosBySport() {
     }
     return acc;
   }
-  const rows = await sql()`
-    select sport, count(*)::int as n from pronos
-    where status <> 'draft' and result = 'pending'
-    group by sport`;
+  const rows = await sql()`select sport, count(*)::int as n from pronos where status <> 'draft' and result = 'pending' group by sport`;
   const acc: Record<string, number> = {};
   for (const r of rows) acc[String((r as Record<string, unknown>).sport)] = Number((r as Record<string, unknown>).n);
   return acc;
@@ -100,49 +87,16 @@ export async function getPerformanceSummary(sport?: string) {
     return computePerformance(rows);
   }
   const rows = sport
-    ? await sql()`
-        select
-          count(*)::int as published,
-          count(*) filter (where result in ('hit','miss'))::int as settled,
-          count(*) filter (where result = 'hit')::int as hits,
-          count(*) filter (where result = 'miss')::int as miss,
-          count(*) filter (where result = 'void')::int as voids,
-          count(*) filter (where result = 'pending')::int as pending,
-          avg(replace(odd, ',', '.')::numeric) filter (
-            where result in ('hit','miss') and odd ~ '^[0-9]+([.,][0-9]+)?$'
-          ) as avg_odd
-        from pronos where status <> 'draft' and sport = ${sport}`
-    : await sql()`
-        select
-          count(*)::int as published,
-          count(*) filter (where result in ('hit','miss'))::int as settled,
-          count(*) filter (where result = 'hit')::int as hits,
-          count(*) filter (where result = 'miss')::int as miss,
-          count(*) filter (where result = 'void')::int as voids,
-          count(*) filter (where result = 'pending')::int as pending,
-          avg(replace(odd, ',', '.')::numeric) filter (
-            where result in ('hit','miss') and odd ~ '^[0-9]+([.,][0-9]+)?$'
-          ) as avg_odd
-        from pronos where status <> 'draft'`;
+    ? await sql()`select count(*)::int as published, count(*) filter (where result in ('hit','miss'))::int as settled, count(*) filter (where result = 'hit')::int as hits, count(*) filter (where result = 'miss')::int as miss, count(*) filter (where result = 'void')::int as voids, count(*) filter (where result = 'pending')::int as pending, avg(replace(odd, ',', '.')::numeric) filter (where result in ('hit','miss') and odd ~ '^[0-9]+([.,][0-9]+)?$') as avg_odd from pronos where status <> 'draft' and sport = ${sport}`
+    : await sql()`select count(*)::int as published, count(*) filter (where result in ('hit','miss'))::int as settled, count(*) filter (where result = 'hit')::int as hits, count(*) filter (where result = 'miss')::int as miss, count(*) filter (where result = 'void')::int as voids, count(*) filter (where result = 'pending')::int as pending, avg(replace(odd, ',', '.')::numeric) filter (where result in ('hit','miss') and odd ~ '^[0-9]+([.,][0-9]+)?$') as avg_odd from pronos where status <> 'draft'`;
   const r = rows[0] as Record<string, unknown>;
   const settled = Number(r.settled);
   const hits = Number(r.hits);
-  return {
-    published: Number(r.published),
-    settled,
-    hits,
-    miss: Number(r.miss),
-    voids: Number(r.voids),
-    pending: Number(r.pending),
-    rate: settled ? Math.round((hits / settled) * 1000) / 10 : null,
-    avgOdd: r.avg_odd != null ? Math.round(Number(r.avg_odd) * 100) / 100 : null,
-    sampleOk: settled >= 30,
-  };
+  return { published: Number(r.published), settled, hits, miss: Number(r.miss), voids: Number(r.voids), pending: Number(r.pending), rate: settled ? Math.round((hits / settled) * 1000) / 10 : null, avgOdd: r.avg_odd != null ? Math.round(Number(r.avg_odd) * 100) / 100 : null, sampleOk: settled >= 30 };
 }
 export async function listActionablePronos() {
   if (!hasDatabase()) return mem().pronos.filter((p) => p.status !== "settled");
-  const rows = await sql()`select * from pronos where status <> 'settled' order by created_at desc`;
-  return rows.map((r) => mapProno(r as Record<string, unknown>));
+  return (await sql()`select * from pronos where status <> 'settled' order by created_at desc`).map((r) => mapProno(r as Record<string, unknown>));
 }
 export async function listAllPronosPage(opts: { limit: number; offset: number }) {
   const { limit, offset } = opts;
@@ -150,9 +104,7 @@ export async function listAllPronosPage(opts: { limit: number; offset: number })
     const rows = [...mem().pronos];
     return { rows: rows.slice(offset, offset + limit), total: rows.length };
   }
-  const rows = await sql()`
-    select *, count(*) over() as total_count from pronos
-    order by created_at desc limit ${limit} offset ${offset}`;
+  const rows = await sql()`select *, count(*) over() as total_count from pronos order by created_at desc limit ${limit} offset ${offset}`;
   const total = rows.length ? Number(rows[0].total_count) : 0;
   return { rows: rows.map((r) => mapProno(r as Record<string, unknown>)), total };
 }
@@ -173,11 +125,19 @@ export async function getProno(id: string) {
 export async function createProno(input: Omit<Prono, "id" | "followCount" | "createdAt" | "result">) {
   const row: Prono = { ...input, id: randomUUID(), followCount: 0, result: "pending", createdAt: new Date().toISOString() };
   if (!hasDatabase()) { mem().pronos.unshift(row); return row; }
-  await sql()`
-    insert into pronos (id, sport, competition, event_name, kickoff, pick, rationale, status, result, follow_count, created_at, is_paid, odd, confidence, stake_units)
-    values (${row.id}, ${row.sport}, ${row.competition}, ${row.eventName}, ${row.kickoff}, ${row.pick}, ${row.rationale}, ${row.status}, ${row.result}, ${row.followCount}, ${row.createdAt}, ${row.isPaid}, ${row.odd}, ${row.confidence}, ${row.stakeUnits})
-  `;
+  await sql()`insert into pronos (id, sport, competition, event_name, kickoff, pick, rationale, status, result, follow_count, created_at, is_paid, odd, confidence, stake_units) values (${row.id}, ${row.sport}, ${row.competition}, ${row.eventName}, ${row.kickoff}, ${row.pick}, ${row.rationale}, ${row.status}, ${row.result}, ${row.followCount}, ${row.createdAt}, ${row.isPaid}, ${row.odd}, ${row.confidence}, ${row.stakeUnits})`;
   return row;
+}
+export async function updateProno(id: string, input: Partial<Omit<Prono, "id" | "createdAt" | "followCount">>) {
+  const current = await getProno(id);
+  if (!current) return null;
+  const next = { ...current, ...input };
+  if (!hasDatabase()) {
+    Object.assign(current, next);
+    return current;
+  }
+  await sql()`update pronos set sport = ${next.sport}, competition = ${next.competition}, event_name = ${next.eventName}, kickoff = ${next.kickoff}, pick = ${next.pick}, rationale = ${next.rationale}, is_paid = ${next.isPaid}, odd = ${next.odd}, confidence = ${next.confidence}, stake_units = ${next.stakeUnits} where id = ${id}`;
+  return getProno(id);
 }
 export async function settleProno(id: string, result: Prono["result"]) {
   const current = await getProno(id);
@@ -214,9 +174,14 @@ export async function getMontante(id: string) {
 export async function createMontante(input: Omit<Montante, "id" | "createdAt">) {
   const row: Montante = { ...input, id: randomUUID(), createdAt: new Date().toISOString() };
   if (!hasDatabase()) { mem().montantes.unshift(row); return row; }
-  await sql()`
-    insert into montantes (id, title, cadence, steps, entry_amount, currency, description, status, created_at)
-    values (${row.id}, ${row.title}, ${row.cadence}, ${row.steps}, ${row.entryAmount}, ${row.currency}, ${row.description}, ${row.status}, ${row.createdAt})
-  `;
+  await sql()`insert into montantes (id, title, cadence, steps, entry_amount, currency, description, status, created_at) values (${row.id}, ${row.title}, ${row.cadence}, ${row.steps}, ${row.entryAmount}, ${row.currency}, ${row.description}, ${row.status}, ${row.createdAt})`;
   return row;
+}
+export async function updateMontante(id: string, input: Partial<Omit<Montante, "id" | "createdAt">>) {
+  const current = await getMontante(id);
+  if (!current) return null;
+  const next = { ...current, ...input };
+  if (!hasDatabase()) { Object.assign(current, next); return current; }
+  await sql()`update montantes set title = ${next.title}, cadence = ${next.cadence}, steps = ${next.steps}, entry_amount = ${next.entryAmount}, currency = ${next.currency}, description = ${next.description}, status = ${next.status} where id = ${id}`;
+  return getMontante(id);
 }
