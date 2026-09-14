@@ -2,7 +2,10 @@ import { runPronoAutomation } from "@/lib/automation";
 import { listActionablePronos } from "@/lib/store";
 import { ensureSchema } from "@/lib/schema";
 import { getSettings } from "@/lib/commerce";
+import { hasDatabase } from "@/lib/db";
 import { revalidatePath } from "next/cache";
+
+export const dynamic = "force-dynamic";
 
 async function runNow() {
   "use server";
@@ -12,6 +15,14 @@ async function runNow() {
 }
 
 export default async function AdminAutomationPage() {
+  if (!hasDatabase()) {
+    return (
+      <>
+        <h1>Automatisation</h1>
+        <p className="empty">Base non configurée sur cet hébergeur.</p>
+      </>
+    );
+  }
   await ensureSchema();
   const pronos = await listActionablePronos();
   const pending = pronos.filter((p) => p.result === "pending");
@@ -19,13 +30,7 @@ export default async function AdminAutomationPage() {
   return (
     <>
       <h1>Automatisation</h1>
-      <p className="muted">
-        La machine vérifie d’abord ce qui est déjà prévu aujourd’hui. Si un sport actif a moins de 10 tickets,
-        elle complète depuis le calendrier officiel. Dimanche football : cible 16. Sports difficiles (esport, MMA, F1…) ignorés.
-        Les tickets difficiles (score exact, 2 sec, handicaps tordus) ne sont pas posés.
-        On ne copie aucun site concurrent — uniquement calendrier + patterns de nos propres soldes.
-        Dernier passage : {settings.feed_day || "jamais"}.
-      </p>
+      <p className="muted">Dernier passage : {settings.feed_day || "jamais"}.</p>
       <form action={runNow}><button className="btn" type="submit">Alimenter et solder maintenant</button></form>
       <h2>En attente ({pending.length})</h2>
       {pending.length === 0 ? <p className="empty">Aucun ticket ouvert.</p> : (
