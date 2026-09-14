@@ -18,11 +18,26 @@ function parseKickoff(value: string): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function pickImplies(pick: string): "home" | "away" | "draw" | null {
+function decide(pick: string, score: { home: number; away: number }): "hit" | "miss" | null {
   const p = pick.toLowerCase();
-  if (/\b(nul|draw|x)\b/.test(p) || p.includes("match nul")) return "draw";
-  if (/\b(2|away|ext[eé]rieur|visiteur)\b/.test(p)) return "away";
-  if (/\b(1|home|domicile)\b/.test(p)) return "home";
+  const total = score.home + score.away;
+  const over = p.match(/(over|plus)\s*([0-9]+(?:[.,][0-9]+)?)/);
+  const under = p.match(/(under|moins)\s*([0-9]+(?:[.,][0-9]+)?)/);
+  if (over) return total > Number(over[2].replace(",", ".")) ? "hit" : "miss";
+  if (under) return total < Number(under[2].replace(",", ".")) ? "hit" : "miss";
+  if (p.includes("btts") && (p.includes("oui") || p.includes("yes"))) return score.home > 0 && score.away > 0 ? "hit" : "miss";
+  if (p.includes("btts") && (p.includes("non") || p.includes("no"))) return score.home === 0 || score.away === 0 ? "hit" : "miss";
+  const ah = p.match(/ah\s*([+-]?[0-9]+(?:[.,][0-9]+)?)\s*(1|2|home|away)?/);
+  if (ah) {
+    const line = Number(ah[1].replace(",", "."));
+    const side = ah[2] || "1";
+    const adj = side === "2" || side === "away" ? score.away + line - score.home : score.home + line - score.away;
+    if (adj === 0) return null;
+    return adj > 0 ? "hit" : "miss";
+  }
+  if (/\b(nul|draw|x)\b/.test(p) || p.includes("match nul")) return score.home === score.away ? "hit" : "miss";
+  if (/\b(2|away|ext[eé]rieur)\b/.test(p)) return score.away > score.home ? "hit" : "miss";
+  if (/\b(1|home|domicile)\b/.test(p) || p === "1") return score.home > score.away ? "hit" : "miss";
   return null;
 }
 
@@ -36,12 +51,7 @@ async function lookupFinishedScore(eventName: string): Promise<{ home: number; a
     event?: Array<{ strStatus?: string; intHomeScore?: string; intAwayScore?: string }>;
   };
   const ev = data.event?.[0];
-  if (!ev) return null;
-  const status = (ev.strStatus || "").toLowerCase();
-  if (status && !/match finished|ft|full.?time|finished/.test(status) && ev.intHomeScore == null) {
-    return null;
-  }
-  if (ev.intHomeScore == null || ev.intAwayScore == null) return null;
+  if (!ev || ev.intHomeScore == null || ev.intAwayScore == null) return null;
   return { home: Number(ev.intHomeScore), away: Number(ev.intAwayScore) };
 }
 
@@ -58,51 +68,40 @@ export async function runPronoAutomation(): Promise<AutoReport> {
 
   for (const p of all) {
     const kick = parseKickoff(p.kickoff);
-
     if (p.status === "draft") {
       if (kick && kick.getTime() - now.getTime() <= 6 * 60 * 60 * 1000 && kick.getTime() > now.getTime() - 30 * 60 * 1000) {
-        if (hasDatabase()) {
-          await sql()`update pronos set status = 'published' where id = ${p.id}`;
-        } else {
-          p.status = "published";
-        }
+        if (hasDatabase()) await sql()`update pronos set status = 'published' where id = ${p.id}`;
+        else p.status = "published";
         report.published.push(p.id);
         await audit("auto-publish", p.id);
-      } else {
-        report.skipped.push({ id: p.id, reason: "draft hors fenêtre T-6h" });
-      }
+      } else report.skipped.push({ id: p.id, reason: "draft hors fenêtre T-6h" });
       continue;
     }
-
     if (p.status === "published" && p.result === "pending" && kick && kick.getTime() <= now.getTime()) {
       report.live.push(p.id);
-      const elapsed = now.getTime() - kick.getTime();
-      if (elapsed < 2 * 60 * 60 * 1000) {
-        report.skipped.push({ id: p.id, reason: "match en cours / trop tôt pour solder" });
-        continue;
-      }
-      const implied = pickImplies(p.pick);
-      if (!implied) {
-        report.skipped.push({ id: p.id, reason: "pick non 1/N/2 — solder manuel" });
+      if (now.getTime() - kick.getTime() < 2 * 60 * 60 * 1000) {
+        report.skipped.push({ id: p.id, reason: "match encore trop tôt pour solder" });
         continue;
       }
       try {
         const score = await lookupFinishedScore(p.eventName);
         if (!score) {
-          report.skipped.push({ id: p.id, reason: "résultat introuvable (TheSportsDB)" });
+          report.skipped.push({ id: p.id, reason: "score introuvable" });
           continue;
         }
-        const outcome = score.home === score.away ? "draw" : score.home > score.away ? "home" : "away";
-        const result = outcome === implied ? "hit" : "miss";
+        const result = decide(p.pick, score);
+        if (!result) {
+          report.skipped.push({ id: p.id, reason: "marché non décidable auto" });
+          continue;
+        }
         await settleProno(p.id, result);
         report.settled.push({ id: p.id, result });
         await audit(`auto-settle:${result}`, p.id);
       } catch {
-        report.skipped.push({ id: p.id, reason: "erreur API résultats" });
+        report.skipped.push({ id: p.id, reason: "erreur API" });
       }
     }
   }
-
   return report;
 }
 
