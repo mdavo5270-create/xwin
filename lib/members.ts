@@ -1,9 +1,10 @@
 import { cookies } from "next/headers";
-import { createHmac, randomBytes, randomUUID, scryptSync, timingSafeEqual } from "crypto";
+import { createHash, createHmac, randomBytes, randomUUID, scryptSync, timingSafeEqual } from "crypto";
 import { sql } from "./db";
 import { ensureSchema } from "./schema";
 import { safeCompareEqualLength } from "./safe-compare";
 import { rateLimit } from "./rate-limit";
+import { sendMail } from "./mailer";
 import type { Member } from "./types";
 
 const COOKIE = "xwin_member";
@@ -78,6 +79,49 @@ async function setMemberCookie(member: Member) {
     path: "/",
     maxAge: 60 * 60 * 24 * 14,
   });
+}
+
+export async function requestPasswordReset(email: string) {
+  const limited = await rateLimit("password-reset", 5, 60 * 60);
+  if (!limited.ok) {
+    return { ok: false as const, error: "Trop de tentatives. Réessaie dans quelques minutes." };
+  }
+  await ensureSchema();
+  const clean = email.trim().toLowerCase();
+  const rows = await sql()`select id from users where email = ${clean} limit 1`;
+  const row = rows[0] as { id: string } | undefined;
+  // Toujours répondre pareil qu'un compte existe ou non (anti-énumération d'emails).
+  if (!row) return { ok: true as const, sent: false as const, link: undefined };
+
+  const token = randomBytes(32).toString("hex");
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  await sql()`
+    insert into password_resets (id, user_id, token_hash, expires_at)
+    values (${randomUUID()}, ${row.id}, ${tokenHash}, now() + interval '1 hour')
+  `;
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://xwin-mu.vercel.app";
+  const link = `${base}/reset-password?token=${token}`;
+  const mail = await sendMail(clean, "Réinitialise ton mot de passe XWIN", `Lien valable 1 heure : ${link}`);
+  return { ok: true as const, sent: mail.sent, link: mail.sent ? undefined : link };
+}
+
+export async function resetPassword(token: string, password: string) {
+  if (!token) return { ok: false as const, error: "Lien invalide ou expiré." };
+  if (!password || password.length < 8) {
+    return { ok: false as const, error: "Mot de passe trop court (8 caractères minimum)." };
+  }
+  await ensureSchema();
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const rows = await sql()`
+    select id, user_id from password_resets
+    where token_hash = ${tokenHash} and used = false and expires_at > now()
+    limit 1
+  `;
+  const row = rows[0] as { id: string; user_id: string } | undefined;
+  if (!row) return { ok: false as const, error: "Lien invalide ou expiré." };
+  await sql()`update users set password_hash = ${hashPassword(password)} where id = ${row.user_id}`;
+  await sql()`update password_resets set used = true where id = ${row.id}`;
+  return { ok: true as const };
 }
 
 export async function logoutMember() {

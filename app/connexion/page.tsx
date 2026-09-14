@@ -8,7 +8,7 @@ export default async function ConnexionPage({ searchParams }: { searchParams: Pr
       <div className="auth-card">
         <p><Link href="/">← Retour au site</Link></p>
         <p className="eyebrow">XWIN</p>
-        <h1>Entrer</h1>
+        <h1>Connexion</h1>
         {q.err ? <p className="err">{q.err}</p> : null}
         <form action={loginAction}>
           <input type="hidden" name="next" value={q.next ?? "/app"} />
@@ -17,7 +17,7 @@ export default async function ConnexionPage({ searchParams }: { searchParams: Pr
           <button className="btn" type="submit">Continuer</button>
         </form>
         <p className="muted"><Link href="/mot-de-passe-oublie">Mot de passe oublié</Link></p>
-        <p className="muted">Nouveau ? <Link href="/inscription">Rejoindre</Link></p>
+        <p className="muted">Nouveau ? <Link href="/inscription">S’inscrire</Link></p>
         <p className="muted" style={{ marginTop: "1.2rem" }}>
           <Link href="/a-propos">À propos</Link> · <Link href="/contact">Contact</Link> · <Link href="/conditions">Conditions</Link>
         </p>
