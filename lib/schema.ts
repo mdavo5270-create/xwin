@@ -1,26 +1,9 @@
 import { sql } from "./db";
 import { ensureLaunchTickets } from "./bootstrap";
+import { seedDefaultOffers } from "./offers";
 
 let ready = false;
 
-/**
- * Idempotent (CREATE/ALTER ... IF NOT EXISTS), donc sans risque à ré-appeler.
- *
- * Avant ce correctif : 12 instructions DDL enchaînées avec `await` une par
- * une, soit 12 allers-retours HTTP séquentiels vers Neon à chaque cold
- * start serverless (le driver Neon serverless fait un round-trip HTTP par
- * requête, il n'y a pas de connexion persistante à réutiliser). Sur un
- * accueil sans prono, ça s'enchaînait en plus avec ensureLaunchTickets()
- * (1 SELECT + 4 INSERT séquentiels) : ~17 allers-retours au total avant
- * le premier rendu. Terrain favorable à un flux RSC trop lent qui se fait
- * couper.
- *
- * Ici : deux vagues exécutées en parallèle (Promise.all). Vague 2 après
- * vague 1 uniquement parce que sessions/favorites/votes/password_resets
- * référencent users(id) par clé étrangère : sur une base neuve, `users`
- * doit exister avant de créer ces tables. Le reste n'a aucune dépendance
- * croisée et peut partir en même temps.
- */
 export async function ensureSchema() {
   if (ready) return;
 
@@ -45,6 +28,26 @@ export async function ensureSchema() {
     sql()`CREATE TABLE IF NOT EXISTS audit_logs (
       id uuid PRIMARY KEY, actor text NOT NULL, action text NOT NULL,
       resource text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`,
+    sql()`CREATE TABLE IF NOT EXISTS offers (
+      id uuid PRIMARY KEY,
+      type text NOT NULL,
+      title text NOT NULL,
+      description text NOT NULL DEFAULT '',
+      price text NOT NULL DEFAULT '',
+      currency text NOT NULL DEFAULT 'XOF',
+      period text NOT NULL DEFAULT '',
+      cadence text NOT NULL DEFAULT '',
+      steps int NOT NULL DEFAULT 0,
+      active boolean NOT NULL DEFAULT true,
+      created_at timestamptz NOT NULL DEFAULT now())`,
+    sql()`CREATE TABLE IF NOT EXISTS site_settings (
+      key text PRIMARY KEY,
+      value text NOT NULL DEFAULT '')`,
+    sql()`CREATE TABLE IF NOT EXISTS admin_sessions (
+      id uuid PRIMARY KEY,
+      ok boolean NOT NULL,
+      note text NOT NULL DEFAULT '',
+      created_at timestamptz NOT NULL DEFAULT now())`,
   ]);
 
   await Promise.all([
@@ -65,8 +68,42 @@ export async function ensureSchema() {
       id uuid PRIMARY KEY, user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       token_hash text NOT NULL, expires_at timestamptz NOT NULL,
       used boolean NOT NULL DEFAULT false, created_at timestamptz NOT NULL DEFAULT now())`,
+    sql()`CREATE TABLE IF NOT EXISTS orders (
+      id uuid PRIMARY KEY,
+      user_id uuid REFERENCES users(id) ON DELETE SET NULL,
+      offer_id uuid,
+      amount text NOT NULL DEFAULT '',
+      currency text NOT NULL DEFAULT 'XOF',
+      status text NOT NULL DEFAULT 'pending',
+      created_at timestamptz NOT NULL DEFAULT now())`,
+    sql()`CREATE TABLE IF NOT EXISTS subscriptions (
+      id uuid PRIMARY KEY,
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      offer_id uuid,
+      status text NOT NULL DEFAULT 'inactive',
+      created_at timestamptz NOT NULL DEFAULT now())`,
+    sql()`CREATE TABLE IF NOT EXISTS payments (
+      id uuid PRIMARY KEY,
+      order_id uuid,
+      amount text NOT NULL DEFAULT '',
+      provider text NOT NULL DEFAULT '',
+      reference text NOT NULL DEFAULT '',
+      status text NOT NULL DEFAULT 'off',
+      created_at timestamptz NOT NULL DEFAULT now())`,
+    sql()`CREATE TABLE IF NOT EXISTS notifications (
+      id uuid PRIMARY KEY,
+      user_id uuid REFERENCES users(id) ON DELETE CASCADE,
+      title text NOT NULL,
+      body text NOT NULL DEFAULT '',
+      created_at timestamptz NOT NULL DEFAULT now())`,
+    sql()`CREATE TABLE IF NOT EXISTS waitlist_signups (
+      id uuid PRIMARY KEY,
+      email text NOT NULL,
+      offer_id uuid,
+      created_at timestamptz NOT NULL DEFAULT now())`,
   ]);
 
   ready = true;
   await ensureLaunchTickets();
+  await seedDefaultOffers();
 }
