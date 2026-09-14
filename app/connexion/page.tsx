@@ -1,6 +1,8 @@
+import Image from "next/image";
 import Link from "next/link";
 import { loginAction } from "./actions";
 import { registerAction } from "@/app/inscription/actions";
+import logo from "@/public/logo-full.png";
 import "../gate.css";
 
 export default async function ConnexionPage({
@@ -13,7 +15,7 @@ export default async function ConnexionPage({
   return (
     <main className="gate">
       <div className="gate-auth">
-        <h1>Xwin</h1>
+        <Image className="gate-logo" src={logo} alt="XWIN" priority />
         <p className="gate-tag">Xwin - Votre partenaire de confiance</p>
         <div className="gate-switch">
           <Link className={!signup ? "on" : ""} href="/connexion">Connexion</Link>
