@@ -35,6 +35,10 @@ export async function ensureSchema() {
     choice text NOT NULL,
     created_at timestamptz NOT NULL DEFAULT now(),
     PRIMARY KEY (user_id, prono_id))`;
+  await sql()`CREATE TABLE IF NOT EXISTS password_resets (
+    id uuid PRIMARY KEY, user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash text NOT NULL, expires_at timestamptz NOT NULL,
+    used boolean NOT NULL DEFAULT false, created_at timestamptz NOT NULL DEFAULT now())`;
   ready = true;
   await ensureLaunchTickets();
 }

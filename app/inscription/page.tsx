@@ -8,7 +8,7 @@ export default async function InscriptionPage({ searchParams }: { searchParams: 
       <div className="auth-card">
         <p><Link href="/">← Retour au site</Link></p>
         <p className="eyebrow">XWIN</p>
-        <h1>Rejoindre</h1>
+        <h1>Inscription</h1>
         {q.err ? <p className="err">{q.err}</p> : null}
         <form action={registerAction}>
           <label>Nom<input name="name" required /></label>
@@ -21,7 +21,7 @@ export default async function InscriptionPage({ searchParams }: { searchParams: 
           </label>
           <button className="btn" type="submit">Créer mon compte</button>
         </form>
-        <p className="muted">Déjà inscrit ? <Link href="/connexion">Entrer</Link></p>
+        <p className="muted">Déjà inscrit ? <Link href="/connexion">Connexion</Link></p>
       </div>
     </main>
   );
