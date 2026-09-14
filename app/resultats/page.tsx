@@ -1,59 +1,34 @@
 import Link from "next/link";
 import { PublicChrome } from "@/components/PublicChrome";
+import { MatchCard } from "@/components/MatchCard";
 import { getMember } from "@/lib/members";
-import { getPerformanceSummary, listPublishedPronosPage } from "@/lib/store";
+import { getPerformanceSummary, listPublishedPronos } from "@/lib/store";
+import { groupMatches } from "@/lib/matches";
 import { ensureSchema } from "@/lib/schema";
-import { formatDateTime } from "@/lib/format-date";
 
 export const dynamic = "force-dynamic";
-const PAGE_SIZE = 20;
 
-export default async function ResultatsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+export default async function ResultatsPage() {
   await ensureSchema();
   const member = await getMember();
-  const { page: pageParam } = await searchParams;
-  const page = Math.max(1, Number(pageParam) || 1);
-  const [s, { rows, total }] = await Promise.all([
-    getPerformanceSummary(),
-    listPublishedPronosPage({ limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE }),
-  ]);
-  const pageCount = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const [s, all] = await Promise.all([getPerformanceSummary(), listPublishedPronos()]);
+  const done = groupMatches(all).filter((m) => m.pending === 0 && m.hits + m.miss > 0);
   return (
     <PublicChrome member={member}>
-      <main className="wrap">
+      <main className="wrap programme">
         <h1>Résultats</h1>
-        <p className="muted">Uniquement les pronos publiés puis soldés. Pas de sélection des gagnants.</p>
-        <div className="grid two">
-          <div className="card">Publiés {s.published}</div>
-          <div className="card">Soldés {s.settled}</div>
-          <div className="card">Hit {s.hits}</div>
-          <div className="card">Miss {s.miss}</div>
-          <div className="card">Void {s.voids}</div>
-          <div className="card">En attente {s.pending}</div>
+        <p className="muted">Score d’un match = tickets gagnants / tickets soldés. Rien d’autre.</p>
+        <div className="grid three">
+          <div className="card">Tickets soldés {s.settled}</div>
+          <div className="card">Gagnés {s.hits}</div>
           <div className="card">Taux {s.rate === null ? "—" : `${s.rate} %`}</div>
-          <div className="card">Cote moy. {s.avgOdd ?? "—"}</div>
         </div>
-        {!s.sampleOk ? (
-          <p className="empty" style={{ marginTop: "1rem" }}>
-            Échantillon trop petit pour parler de rendement ({s.settled} soldés, seuil usuel 30+).
-          </p>
-        ) : null}
-        <h2>Historique</h2>
-        <p className="muted">{total} pronos au total · page {page} sur {pageCount}</p>
-        {rows.length === 0 ? <p className="empty">Pas encore d’historique.</p> : (
-          <div className="grid">{rows.map((p) => (
-            <div className="card" key={p.id}>
-              <strong>{p.eventName}</strong>
-              <div className="muted">{formatDateTime(p.createdAt)} · {p.pick} · cote {p.odd || "—"} · {p.result}</div>
-            </div>
-          ))}</div>
-        )}
-        {pageCount > 1 ? (
-          <div className="cta-row" style={{ marginTop: "1.2rem" }}>
-            {page > 1 ? <Link className="btn ghost" href={`/resultats?page=${page - 1}`}>← Précédent</Link> : null}
-            {page < pageCount ? <Link className="btn ghost" href={`/resultats?page=${page + 1}`}>Suivant →</Link> : null}
+        {done.length === 0 ? <p className="empty">Pas encore de match soldé.</p> : (
+          <div className="fix-list" style={{ marginTop: "1.2rem" }}>
+            {done.map((m) => <MatchCard key={m.key} m={m} />)}
           </div>
-        ) : null}
+        )}
+        <p className="muted" style={{ marginTop: "1rem" }}><Link href="/pronostics">Matchs ouverts</Link></p>
       </main>
     </PublicChrome>
   );
