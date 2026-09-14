@@ -1,4 +1,7 @@
 import type { MetadataRoute } from "next";
+
+const BASE = process.env.NEXT_PUBLIC_SITE_URL || "https://xwin-mu.vercel.app";
+
 export default function robots(): MetadataRoute.Robots {
-  return { rules: { userAgent: "*", allow: "/", disallow: ["/admin", "/app"] }, sitemap: "https://xwin-staiglobal0-6471.vercel.app/sitemap.xml" };
+  return { rules: { userAgent: "*", allow: "/", disallow: ["/admin", "/app"] }, sitemap: `${BASE}/sitemap.xml` };
 }

@@ -5,6 +5,7 @@ import { getMember } from "@/lib/members";
 import { sportLabel } from "@/lib/sports";
 import { getProno } from "@/lib/store";
 import { favoriteAction } from "@/app/app/favoris/actions";
+import { followProAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -42,12 +43,19 @@ export default async function PronosticDetail({ params }: { params: Promise<{ id
           {locked ? <p className="muted">Réservé. Paiement encore off.</p> : <p style={{ whiteSpace: "pre-wrap" }}>{p.rationale}</p>}
         </section>
         <p className="muted">Statut {p.status} · Résultat {p.result}</p>
-        {member ? (
-          <form action={favoriteAction} style={{ marginTop: "1rem" }}>
-            <input type="hidden" name="id" value={p.id} />
-            <button className="btn" type="submit">Ajouter / retirer des favoris</button>
-          </form>
-        ) : null}
+        <div className="cta-row">
+          {!locked ? (
+            <form action={followProAction.bind(null, p.id)}>
+              <button className="btn ghost" type="submit">Je suis ce prono ({p.followCount})</button>
+            </form>
+          ) : null}
+          {member ? (
+            <form action={favoriteAction}>
+              <input type="hidden" name="id" value={p.id} />
+              <button className="btn" type="submit">Ajouter / retirer des favoris</button>
+            </form>
+          ) : null}
+        </div>
       </main>
     </PublicChrome>
   );

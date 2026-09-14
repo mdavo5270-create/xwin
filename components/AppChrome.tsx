@@ -13,10 +13,13 @@ export function AppChrome({ member, children }: { member: Member; children: Reac
   return (
     <div className="app">
       <aside className="side">
-        <Link className="logo" href="/app">XWIN</Link>
+        <Link className="brand" href="/app" aria-label="XWIN — tableau de bord">
+          <img src="/brand/xwin-logo.png" alt="XWIN" height={20} />
+        </Link>
         <nav>
           <Link href="/app">Tableau de bord</Link>
           <Link href="/app/pronostics">Pronostics</Link>
+          <Link href="/montantes">Montantes</Link>
           <Link href="/app/favoris">Favoris</Link>
           <Link href="/app/achats">Achats</Link>
           <Link href="/app/abonnement">Abonnement</Link>

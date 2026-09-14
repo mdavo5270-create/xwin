@@ -25,7 +25,10 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
   return (
     <div className="app admin-app">
       <aside className="side">
-        <Link className="logo" href="/admin">XWIN ADMIN</Link>
+        <Link className="brand admin-brand" href="/admin" aria-label="XWIN admin">
+          <img src="/brand/xwin-logo.png" alt="XWIN" height={18} />
+          <span>Admin</span>
+        </Link>
         <nav>
           {LINKS.map(([href, label]) => (
             <Link key={href} href={href}>{label}</Link>

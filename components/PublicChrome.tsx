@@ -5,10 +5,13 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
   return (
     <div className="site">
       <header className="pub-head">
-        <Link className="logo" href="/">XWIN</Link>
+        <Link className="brand" href="/" aria-label="XWIN — accueil">
+          <img src="/brand/xwin-logo.png" alt="XWIN" height={22} />
+        </Link>
         <nav className="pub-nav">
           <Link href="/">Accueil</Link>
           <Link href="/pronostics">Pronostics</Link>
+          <Link href="/montantes">Montantes</Link>
           <Link href="/analyses">Analyses</Link>
           <Link href="/resultats">Résultats</Link>
           <Link href="/premium">Premium</Link>
@@ -27,7 +30,7 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
       <nav className="pub-mobile">
         <Link href="/">Accueil</Link>
         <Link href="/pronostics">Pronos</Link>
-        <Link href="/resultats">Stats</Link>
+        <Link href="/montantes">Montantes</Link>
         <Link href="/premium">Premium</Link>
         <Link href={member ? "/app" : "/connexion"}>Profil</Link>
       </nav>
