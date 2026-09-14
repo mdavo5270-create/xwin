@@ -73,7 +73,11 @@ export default async function HomePage() {
           <div className="card"><span className="muted">Soldés</span><strong className="stat-num">{s.settled}</strong></div>
           <div className="card"><span className="muted">Taux de réussite</span><strong className="stat-num">{s.rate === null ? "—" : `${s.rate}%`}</strong></div>
         </div>
-        {!s.sampleOk ? <p className="empty" style={{ marginTop: "1rem" }}Échantillon trop petit pour parler de rendement ({s.settled} soldés, seuil usuel 30+).</p> : null}
+        {!s.sampleOk ? (
+          <p className="empty" style={{ marginTop: "1rem" }}>
+            Échantillon trop petit pour parler de rendement ({s.settled} soldés, seuil usuel 30+).
+          </p>
+        ) : null}
         <p className="muted"><Link href="/resultats">Historique complet et détail des cotes →</Link></p>
       </main>
     </PublicChrome>
