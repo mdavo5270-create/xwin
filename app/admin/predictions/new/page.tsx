@@ -26,9 +26,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
   return (
     <>
       <div className="admin-actions"><Link className="btn ghost" href={adminHref("predictions")}>Retour</Link></div>
-      <h1>{q.home ? "Nouveau ticket sur ce match" : "Nouveau pronostic"}</h1>
-      <p className="muted">Pour ajouter un 2e, 3e, 10e ticket : mêmes équipes, même date, autre marché + autre pronostic.</p>
-      <PronoForm action={createPronoAction} p={q.sport ? prefill : undefined} submitLabel="Publier" />
+      <h1>Nouveau match</h1>
+      <p className="muted">Un match, puis autant de tickets que tu veux. Le bouton « Ajouter un ticket » est sous le premier ticket.</p>
+      <PronoForm action={createPronoAction} p={q.sport ? prefill : undefined} submitLabel="Publier le match" />
     </>
   );
 }
