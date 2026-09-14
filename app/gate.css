@@ -1,0 +1,79 @@
+.gate {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.4rem 1.2rem calc(1.4rem + env(safe-area-inset-bottom));
+  background:
+    radial-gradient(120% 80% at 50% 10%, rgba(80, 90, 120, 0.35), transparent 55%),
+    radial-gradient(90% 60% at 80% 90%, rgba(20, 40, 70, 0.5), transparent 50%),
+    #05060a;
+  color: #fff;
+  text-align: center;
+}
+.gate-logo { width: min(82vw, 280px); height: auto; }
+.gate-tag {
+  margin-top: 1.2rem;
+  color: rgba(255,255,255,.62);
+  font-size: .95rem;
+}
+.gate-auth { width: min(26rem, 100%); text-align: left; }
+.gate-auth h1 {
+  text-align: center;
+  font-size: 2.4rem;
+  margin: 0 0 .35rem;
+}
+.gate-auth .gate-tag { text-align: center; margin: 0 0 1.4rem; }
+.gate-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: rgba(255,255,255,.08);
+  border-radius: 999px;
+  padding: 4px;
+  margin-bottom: 1.1rem;
+}
+.gate-switch a {
+  text-align: center;
+  border-radius: 999px;
+  padding: .7rem .4rem;
+  font-weight: 700;
+  color: rgba(255,255,255,.55);
+}
+.gate-switch a.on {
+  background: #1f9d4a;
+  color: #fff;
+}
+.gate-auth input {
+  background: #1c1e22;
+  border: 0;
+  border-radius: 16px;
+  padding: 1rem 1rem;
+}
+.gate-auth label { color: transparent; font-size: 0; margin: .45rem 0; }
+.gate-cta {
+  width: 100%;
+  margin-top: .7rem;
+  background: #1f9d4a;
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 1rem;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+.gate-foot {
+  text-align: center;
+  color: rgba(255,255,255,.55);
+  font-size: .86rem;
+  margin-top: 1rem;
+}
+.gate-foot a { color: #3ddc6a; text-decoration: underline; }
+.gate-legal {
+  margin-top: 2rem;
+  text-align: center;
+  color: rgba(255,255,255,.4);
+  font-size: .72rem;
+}
+.gate-legal a { color: inherit; text-decoration: underline; }

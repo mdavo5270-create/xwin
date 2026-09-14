@@ -1,25 +1,51 @@
 import Link from "next/link";
 import { loginAction } from "./actions";
+import { registerAction } from "@/app/inscription/actions";
+import "../gate.css";
 
-export default async function ConnexionPage({ searchParams }: { searchParams: Promise<{ err?: string; next?: string }> }) {
+export default async function ConnexionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ err?: string; next?: string; tab?: string }>;
+}) {
   const q = await searchParams;
+  const signup = q.tab === "inscription";
   return (
-    <main className="auth">
-      <div className="auth-card">
-        <p><Link href="/">← Retour au site</Link></p>
-        <p className="eyebrow">XWIN</p>
-        <h1>Connexion</h1>
+    <main className="gate">
+      <div className="gate-auth">
+        <h1>Xwin</h1>
+        <p className="gate-tag">Xwin - Votre partenaire de confiance</p>
+        <div className="gate-switch">
+          <Link className={!signup ? "on" : ""} href="/connexion">Connexion</Link>
+          <Link className={signup ? "on" : ""} href="/connexion?tab=inscription">Inscription</Link>
+        </div>
         {q.err ? <p className="err">{q.err}</p> : null}
-        <form action={loginAction}>
-          <input type="hidden" name="next" value={q.next ?? "/app"} />
-          <label>Email<input name="email" type="email" required autoComplete="email" /></label>
-          <label>Mot de passe<input name="password" type="password" required autoComplete="current-password" /></label>
-          <button className="btn" type="submit">Continuer</button>
-        </form>
-        <p className="muted"><Link href="/mot-de-passe-oublie">Mot de passe oublié</Link></p>
-        <p className="muted">Nouveau ? <Link href="/inscription">S’inscrire</Link></p>
-        <p className="muted" style={{ marginTop: "1.2rem" }}>
-          <Link href="/a-propos">À propos</Link> · <Link href="/contact">Contact</Link> · <Link href="/conditions">Conditions</Link>
+        {signup ? (
+          <form action={registerAction}>
+            <label>Prénom<input name="firstName" required placeholder="Prénom" autoComplete="given-name" /></label>
+            <label>Nom<input name="lastName" required placeholder="Nom" autoComplete="family-name" /></label>
+            <label>Email<input name="email" type="email" required placeholder="Adresse email" autoComplete="email" /></label>
+            <label>Mot de passe<input name="password" type="password" minLength={8} required placeholder="Mot de passe" /></label>
+            <label>Confirmer<input name="confirm" type="password" minLength={8} required placeholder="Confirmer mot de passe" /></label>
+            <button className="gate-cta" type="submit">S'inscrire</button>
+          </form>
+        ) : (
+          <form action={loginAction}>
+            <input type="hidden" name="next" value={q.next ?? "/accueil"} />
+            <label>Email<input name="email" type="email" required placeholder="Email" autoComplete="email" /></label>
+            <label>Mot de passe<input name="password" type="password" required placeholder="Mot de passe" autoComplete="current-password" /></label>
+            <button className="gate-cta" type="submit">Se Connecter</button>
+          </form>
+        )}
+        <p className="gate-foot">
+          {signup ? (
+            <>Déjà un compte ? <Link href="/connexion">Se connecter</Link></>
+          ) : (
+            <>Pas encore de compte ? <Link href="/connexion?tab=inscription">Créer un compte</Link></>
+          )}
+        </p>
+        <p className="gate-legal">
+          En continuant, vous acceptez les <Link href="/conditions">Conditions d'utilisation</Link> et la <Link href="/confidentialite">Politique de confidentialité</Link>
         </p>
       </div>
     </main>
