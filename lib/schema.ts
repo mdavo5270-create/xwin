@@ -1,4 +1,4 @@
-import { sql } from "./db";
+import { hasDatabase, sql } from "./db";
 import { ensureLaunchTickets } from "./bootstrap";
 import { seedDefaultOffers } from "./offers";
 
@@ -6,6 +6,7 @@ let ready = false;
 
 export async function ensureSchema() {
   if (ready) return;
+  if (!hasDatabase()) return;
 
   await Promise.all([
     sql()`CREATE TABLE IF NOT EXISTS users (
