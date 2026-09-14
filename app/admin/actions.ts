@@ -4,15 +4,19 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { randomUUID } from "crypto";
 import { isAdmin, loginAdmin, logoutAdmin } from "@/lib/admin-auth";
-import { createMontante, createProno, settleProno, updateMontante, updateProno } from "@/lib/store";
+import { createProno, settleProno, updateProno } from "@/lib/store";
+import { createOffer, updateOffer } from "@/lib/offers";
 import { createAnalysis } from "@/lib/editorial";
 import { ensureSchema } from "@/lib/schema";
 import { sql } from "@/lib/db";
 import type { PronoResult } from "@/lib/types";
 import { adminHref } from "@/lib/admin-path";
+import { logAdminSession, setSetting } from "@/lib/commerce";
+import type { OfferType } from "@/lib/offers";
 
 export async function loginAction(form: FormData) {
   const ok = await loginAdmin(String(form.get("password") ?? ""));
+  await logAdminSession(ok, ok ? "login" : "login_failed");
   if (!ok) redirect(`${adminHref()}?err=1`);
   redirect(adminHref());
 }
@@ -36,6 +40,20 @@ function pronoFromForm(form: FormData) {
     odd: String(form.get("odd") ?? "").trim(),
     confidence: String(form.get("confidence") ?? "").trim(),
     stakeUnits: String(form.get("stakeUnits") ?? "1").trim() || "1",
+  };
+}
+function offerFromForm(form: FormData) {
+  const type = String(form.get("type") ?? "abonnement") as OfferType;
+  return {
+    type: (["montante", "abonnement", "service"] as const).includes(type) ? type : "abonnement",
+    title: String(form.get("title") ?? "").trim(),
+    description: String(form.get("description") ?? "").trim(),
+    price: String(form.get("price") ?? "").trim(),
+    currency: String(form.get("currency") ?? "XOF").trim() || "XOF",
+    period: String(form.get("period") ?? "").trim(),
+    cadence: String(form.get("cadence") ?? "").trim(),
+    steps: Number(form.get("steps") ?? 0) || 0,
+    active: form.get("active") === "on",
   };
 }
 export async function createPronoAction(form: FormData) {
@@ -78,33 +96,32 @@ export async function createAnalysisAction(form: FormData) {
   revalidatePath("/analyses");
   redirect(adminHref("analyses"));
 }
-export async function createMontanteAction(form: FormData) {
+export async function createOfferAction(form: FormData) {
   if (!(await isAdmin())) redirect(adminHref());
-  await createMontante({
-    title: String(form.get("title") ?? "").trim(),
-    cadence: form.get("cadence") === "monthly" ? "monthly" : "weekly",
-    steps: Number(form.get("steps") ?? 0),
-    entryAmount: String(form.get("entryAmount") ?? "").trim(),
-    currency: String(form.get("currency") ?? "XOF").trim() || "XOF",
-    description: String(form.get("description") ?? "").trim(),
-    status: "open",
-  });
+  await ensureSchema();
+  const created = await createOffer(offerFromForm(form));
+  await log("create_offer", created.id);
+  revalidatePath("/premium");
+  revalidatePath("/service");
   revalidatePath("/montantes");
   redirect(adminHref("offers"));
 }
-export async function updateMontanteAction(form: FormData) {
+export async function updateOfferAction(form: FormData) {
   if (!(await isAdmin())) redirect(adminHref());
   const id = String(form.get("id") ?? "");
   if (!id) redirect(adminHref("offers"));
-  await updateMontante(id, {
-    title: String(form.get("title") ?? "").trim(),
-    cadence: form.get("cadence") === "monthly" ? "monthly" : "weekly",
-    steps: Number(form.get("steps") ?? 0),
-    entryAmount: String(form.get("entryAmount") ?? "").trim(),
-    currency: String(form.get("currency") ?? "XOF").trim() || "XOF",
-    description: String(form.get("description") ?? "").trim(),
-    status: form.get("status") === "closed" ? "closed" : "open",
-  });
+  await updateOffer(id, offerFromForm(form));
+  await log("update_offer", id);
+  revalidatePath("/premium");
+  revalidatePath("/service");
   revalidatePath("/montantes");
   redirect(adminHref("offers"));
+}
+export async function saveSettingsAction(form: FormData) {
+  if (!(await isAdmin())) redirect(adminHref());
+  await setSetting("site_name", String(form.get("site_name") ?? "XWIN"));
+  await setSetting("currency", String(form.get("currency") ?? "XOF"));
+  await setSetting("maintenance", String(form.get("maintenance") ?? "off"));
+  await log("save_settings", "site_settings");
+  redirect(adminHref("settings"));
 }

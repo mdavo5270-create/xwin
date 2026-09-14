@@ -3,16 +3,13 @@ import Link from "next/link";
 import logo from "@/public/logo-full.png";
 import { adminHref } from "@/lib/admin-path";
 
-const LINKS = [
-  ["", "Vue générale"],
-  ["predictions", "Pronostics"],
-  ["offers", "Offres"],
-  ["results", "Résultats"],
-  ["automation", "Automatisation"],
-  ["stats", "Statistiques"],
-  ["users", "Utilisateurs"],
-  ["settings", "Paramètres"],
-] as const;
+const GROUPS: { title: string; links: [string, string][] }[] = [
+  { title: "", links: [["", "Vue générale"]] },
+  { title: "Contenu", links: [["predictions", "Pronostics"], ["results", "Résultats"], ["analyses", "Analyses"], ["automation", "Automatisation"]] },
+  { title: "Vente", links: [["offers", "Offres"], ["subscriptions", "Abonnements"], ["orders", "Commandes"], ["payments", "Paiements"]] },
+  { title: "Site", links: [["content", "Messages"], ["users", "Utilisateurs"], ["stats", "Statistiques"], ["audit-logs", "Journal"]] },
+  { title: "Compte", links: [["security", "Sécurité"], ["settings", "Paramètres"], ["admins", "Admin"]] },
+];
 
 export function AdminChrome({ children }: { children: React.ReactNode }) {
   return (
@@ -23,8 +20,13 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
           <span>Ops</span>
         </Link>
         <nav>
-          {LINKS.map(([path, label]) => (
-            <Link key={path || "home"} href={adminHref(path)}>{label}</Link>
+          {GROUPS.map((g) => (
+            <div key={g.title || "home"} className="admin-nav-group">
+              {g.title ? <p className="admin-nav-label">{g.title}</p> : null}
+              {g.links.map(([path, label]) => (
+                <Link key={path || "home"} href={adminHref(path)}>{label}</Link>
+              ))}
+            </div>
           ))}
         </nav>
       </aside>

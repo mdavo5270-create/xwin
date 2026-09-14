@@ -1,33 +1,35 @@
-import Link from "next/link";
 import { PublicChrome } from "@/components/PublicChrome";
 import { getMember } from "@/lib/members";
+import { listOffers } from "@/lib/offers";
+import { ensureSchema } from "@/lib/schema";
 import "../browse.css";
 
+export const dynamic = "force-dynamic";
+
 export default async function PremiumPage() {
+  await ensureSchema();
   const member = await getMember();
+  const plans = await listOffers("abonnement", true);
   return (
     <PublicChrome member={member}>
       <section className="billboard">
         <p className="kicker">Club</p>
-        <h1>Deux portes. Paiement encore fermé.</h1>
-        <p className="meta">Les prix sont affichés. L’encaissement reste coupé.</p>
+        <h1>Abonnements. Paiement encore fermé.</h1>
+        <p className="meta">Les prix viennent de la base. L’encaissement reste coupé.</p>
       </section>
       <main className="wrap">
-        <div className="grid two">
-          <section className="card">
-            <h3>Essentiel</h3>
-            <p className="vs"><span>4 900 F</span><span>/ sem.</span></p>
-            <p className="muted">Tickets club 7 jours + historique public.</p>
-            <Link className="btn ghost" href="/inscription">Me prévenir</Link>
-          </section>
-          <section className="card" style={{ boxShadow: "inset 0 0 0 1px rgba(200,245,66,.35)" }}>
-            <span className="badge pay">Choix</span>
-            <h3>Pro</h3>
-            <p className="vs"><span>14 900 F</span><span>/ mois</span></p>
-            <p className="muted">Tickets, notes, montantes du mois.</p>
-            <Link className="btn ghost" href="/inscription">Me prévenir</Link>
-          </section>
-        </div>
+        {plans.length === 0 ? <p className="empty">Aucun abonnement publié.</p> : (
+          <div className="grid two">
+            {plans.map((p) => (
+              <section className="card" key={p.id}>
+                <h3>{p.title}</h3>
+                <p className="vs"><span>{p.price} {p.currency}</span><span>{p.period}</span></p>
+                <p className="muted">{p.description}</p>
+                <button className="btn" type="button" disabled>Paiement pas encore activé</button>
+              </section>
+            ))}
+          </div>
+        )}
       </main>
     </PublicChrome>
   );

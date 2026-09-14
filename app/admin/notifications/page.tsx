@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+import { adminHref } from "@/lib/admin-path";
 export default function Page() {
-  return (<><h1>Notifications</h1><p className="empty">Pas de campagne envoyée.</p></>);
+  redirect(adminHref("content"));
 }
