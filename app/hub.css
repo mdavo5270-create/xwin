@@ -15,10 +15,19 @@ html, body { max-width: 100%; overflow-x: hidden; }
 }
 .hub-frame {
   width: 100%;
-  max-width: 430px;
+  max-width: 100%;
   margin: 0 auto;
   min-height: 100dvh;
   box-sizing: border-box;
+}
+@media (min-width: 600px) {
+  .hub-frame { max-width: 640px; }
+}
+@media (min-width: 900px) {
+  .hub-frame { max-width: 880px; }
+}
+@media (min-width: 1200px) {
+  .hub-frame { max-width: 1040px; }
 }
 .hub-top {
   display: flex;
@@ -64,6 +73,10 @@ html, body { max-width: 100%; overflow-x: hidden; }
   display: grid;
   gap: .5rem;
   padding: .7rem .9rem 1.6rem;
+}
+@media (min-width: 900px) {
+  .hub-top, .hub-tabs { padding-left: 1.2rem; padding-right: 1.2rem; }
+  .hub-list, .hub-body { padding: .9rem 1.2rem 2rem; gap: .65rem; }
 }
 .hub-row {
   display: flex;
