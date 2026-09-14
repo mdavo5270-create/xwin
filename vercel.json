@@ -5,9 +5,7 @@
   "buildCommand": "npm run build",
   "fluid": true,
   "crons": [
-    {
-      "path": "/api/cron/pronos",
-      "schedule": "0 7 * * *"
-    }
+    { "path": "/api/cron/pronos", "schedule": "0 7 * * *" },
+    { "path": "/api/cron/daily-recap", "schedule": "0 21 * * *" }
   ]
 }
