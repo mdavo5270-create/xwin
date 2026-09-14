@@ -33,7 +33,11 @@ export default async function ResultatsPage({ searchParams }: { searchParams: Pr
           <div className="card">Taux {s.rate === null ? "—" : `${s.rate} %`}</div>
           <div className="card">Cote moy. {s.avgOdd ?? "—"}</div>
         </div>
-        {!s.sampleOk ? <p className="empty" style={{ marginTop: "1rem" }}Échantillon trop petit pour parler de rendement ({s.settled} soldés, seuil usuel 30+).</p> : null}
+        {!s.sampleOk ? (
+          <p className="empty" style={{ marginTop: "1rem" }}>
+            Échantillon trop petit pour parler de rendement ({s.settled} soldés, seuil usuel 30+).
+          </p>
+        ) : null}
         <h2>Historique</h2>
         <p className="muted">{total} pronos au total · page {page} sur {pageCount}</p>
         {rows.length === 0 ? <p className="empty">Pas encore d’historique.</p> : (
