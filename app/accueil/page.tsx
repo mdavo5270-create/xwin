@@ -1,62 +1,92 @@
 import Link from "next/link";
-import { PublicChrome } from "@/components/PublicChrome";
-import { SportTiles } from "@/components/SportTiles";
-import { MatchCard } from "@/components/MatchCard";
 import { getMember } from "@/lib/members";
-import { getPerformanceSummary, listPublishedPronos } from "@/lib/store";
-import { groupMatches, countOpenMatchesBySport } from "@/lib/matches";
+import { listPublishedPronos } from "@/lib/store";
+import { groupMatches } from "@/lib/matches";
 import { ensureSchema } from "@/lib/schema";
-import "../browse.css";
+import "../hub.css";
 
 export const dynamic = "force-dynamic";
-
-const PROGRAMMES = [
-  { href: "/pronostics", title: "Pronostics", text: "Le programme du jour, match par match." },
-  { href: "/montantes", title: "Montantes", text: "Des paliers à cadence fixe." },
-  { href: "/premium", title: "Premium", text: "Le programme complet du club." },
-  { href: "/service", title: "Service", text: "Méthodes de jeu à part." },
-] as const;
 
 export default async function AccueilPage() {
   await ensureSchema();
   const member = await getMember();
-  const [s, all] = await Promise.all([getPerformanceSummary(), listPublishedPronos()]);
+  const all = await listPublishedPronos();
   const open = groupMatches(all.filter((p) => p.result === "pending"));
-  const done = groupMatches(all).filter((m) => m.pending === 0 && m.hits + m.miss > 0).slice(0, 6);
-  const countsBySport = countOpenMatchesBySport(all);
+  const now = Date.now();
+  const live = open.filter((m) => {
+    const t = new Date(m.kickoff).getTime();
+    return Number.isFinite(t) && t <= now && now - t < 3 * 60 * 60 * 1000;
+  }).length;
+  const soon = open.length;
+  const foot = open.filter((m) => m.sport === "football").length;
+  const esport = open.filter((m) => m.sport.startsWith("esport")).length;
+  const name = member?.name || "Invité";
+
   return (
-    <PublicChrome member={member}>
-      <section className="hero">
-        <div>
-          <p className="kicker">XWIN</p>
-          <h1>L’analyse avant le pari.</h1>
-          <p>Une fiche par match. Tous les tickets dessus.</p>
+    <div className="hub">
+      <header className="hub-top">
+        <div className="hub-ava" aria-hidden>☺</div>
+        <div className="hub-who">
+          <strong>{name}</strong>
+          <span>{member ? "Profil personnel" : "Pas encore connecté"}</span>
         </div>
-        <div className="perf">
-          <span className="muted">Taux de réussite</span>
-          <strong>{s.rate === null ? "—" : `${s.rate}%`}</strong>
-          <span className="muted">{s.settled} tickets soldés</span>
-          <p><Link href="/resultats">Historique →</Link></p>
-        </div>
-      </section>
-      <main className="wrap programme">
-        <h2>Matchs ouverts</h2>
-        {open.length === 0 ? <p className="empty">Aucun match ouvert.</p> : (
-          <div className="fix-list">{open.slice(0, 8).map((m) => <MatchCard key={m.key} m={m} />)}</div>
-        )}
-        <h2>Par sport</h2>
-        <SportTiles counts={countsBySport} />
-        <h2>Nos programmes</h2>
-        <div className="grid three">
-          {PROGRAMMES.map((prog) => (
-            <Link className="card" key={prog.href} href={prog.href}><h3>{prog.title}</h3><p className="muted">{prog.text}</p></Link>
-          ))}
-        </div>
-        <h2>Derniers scores</h2>
-        {done.length === 0 ? <p className="empty">Pas encore de match soldé.</p> : (
-          <div className="fix-list">{done.map((m) => <MatchCard key={m.key} m={m} />)}</div>
-        )}
-      </main>
-    </PublicChrome>
+        <Link className="hub-ico" href="/contact" aria-label="Messages">✉</Link>
+        <Link className="hub-ico" href={member ? "/app/settings" : "/connexion"} aria-label="Réglages">
+          ⚙{!member ? <i className="hub-dot" /> : null}
+        </Link>
+      </header>
+
+      <div className="hub-money">
+        <div className="hub-bal">0 F</div>
+        <button className="hub-dep" type="button" disabled title="Paiement pas encore activé">+ Déposer</button>
+      </div>
+
+      <nav className="hub-tabs">
+        <Link className="on" href="/accueil">Populaires</Link>
+        <Link href="/pronostics">Sports</Link>
+        <Link href="/pronostics">Pronos</Link>
+        <Link href="/premium">Offres</Link>
+        <Link href="/service">Autre</Link>
+      </nav>
+
+      <div className="hub-list">
+        <Link className="hub-row" href="/sports/football">
+          <span className="hub-mark">⚽</span>
+          <span><strong>Football</strong><em>{foot} match{foot > 1 ? "s" : ""} ouvert{foot > 1 ? "s" : ""}</em></span>
+        </Link>
+        <Link className="hub-row" href="/pronostics">
+          <span className="hub-mark">⏱</span>
+          <span><strong>En direct</strong><em>{live ? `${live} événement${live > 1 ? "s" : ""} en cours` : "Aucun événement en cours"}</em></span>
+        </Link>
+        <Link className="hub-row" href="/pronostics">
+          <span className="hub-mark">📅</span>
+          <span><strong>Avant-match</strong><em>{soon} match{soon > 1 ? "s" : ""} à venir</em></span>
+        </Link>
+        <Link className="hub-row" href="/sports/esport-lol">
+          <span className="hub-mark">🎮</span>
+          <span><strong>E-sport</strong><em>{esport ? `${esport} tickets` : "LoL, CS, Valorant"}</em></span>
+        </Link>
+        <Link className="hub-row" href="/montantes">
+          <span className="hub-mark">↑</span>
+          <span><strong>Montantes</strong><em>Paliers à cadence fixe</em></span>
+        </Link>
+        <Link className="hub-row" href="/premium">
+          <span className="hub-mark">★</span>
+          <span><strong>Premium</strong><em>Programme club — paiement off</em></span>
+        </Link>
+        <Link className="hub-row" href="/service">
+          <span className="hub-mark">⚙</span>
+          <span><strong>Service</strong><em>Méthodes à part</em></span>
+        </Link>
+      </div>
+
+      <nav className="hub-bar">
+        <Link className="on" href="/accueil">Populaire</Link>
+        <Link href={member ? "/app" : "/connexion"}>Favoris</Link>
+        <Link href="/pronostics"><span className="hub-pill">🎫</span>Pronos</Link>
+        <Link href="/resultats">Historique</Link>
+        <Link href={member ? "/app" : "/connexion"}>Menu</Link>
+      </nav>
+    </div>
   );
 }
