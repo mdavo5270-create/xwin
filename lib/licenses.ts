@@ -1,4 +1,4 @@
-import { randomUUID } from "crypto";
+import { randomBytes, randomUUID } from "crypto";
 import { hasDatabase, sql } from "./db";
 import { ensureSchema } from "./schema";
 
@@ -13,6 +13,19 @@ export type License = {
   endsAt: string;
   note: string;
 };
+
+export type LicenseKey = {
+  id: string;
+  code: string;
+  days: number;
+  reservedPublicId: string;
+  redeemed: boolean;
+  createdAt: string;
+};
+
+function makeCode() {
+  return `LIC-${randomBytes(3).toString("hex").toUpperCase()}`;
+}
 
 export async function getActiveLicense(userId: string) {
   if (!hasDatabase() || !userId) return null;
@@ -63,16 +76,57 @@ export async function listLicenses(): Promise<License[]> {
   });
 }
 
-export async function grantLicense(publicId: string, days: 7 | 30, note = "") {
+export async function listLicenseKeys(): Promise<LicenseKey[]> {
+  if (!hasDatabase()) return [];
+  await ensureSchema();
+  const rows = await sql()`
+    select id, code, days, reserved_public_id, redeemed_user_id, created_at
+    from license_keys
+    order by created_at desc
+    limit 80
+  `;
+  return rows.map((r) => {
+    const row = r as Record<string, unknown>;
+    return {
+      id: String(row.id),
+      code: String(row.code),
+      days: Number(row.days),
+      reservedPublicId: String(row.reserved_public_id ?? ""),
+      redeemed: Boolean(row.redeemed_user_id),
+      createdAt: String(row.created_at),
+    };
+  });
+}
+
+export async function createLicenseKey(days: 7 | 30, reservedPublicId = "") {
   if (!hasDatabase()) return { ok: false as const, error: "Base indisponible." };
   await ensureSchema();
-  const code = publicId.trim().toUpperCase();
-  const users = await sql()`select id from users where public_id = ${code} limit 1`;
-  const user = users[0] as { id: string } | undefined;
-  if (!user) return { ok: false as const, error: "ID compte introuvable." };
+  const code = makeCode();
+  const reserved = reservedPublicId.trim().toUpperCase();
+  await sql()`
+    insert into license_keys (id, code, days, reserved_public_id)
+    values (${randomUUID()}, ${code}, ${days}, ${reserved})
+  `;
+  return { ok: true as const, code };
+}
+
+export async function redeemLicense(userId: string, publicId: string, raw: string) {
+  if (!hasDatabase()) return { ok: false as const, error: "Base indisponible." };
+  await ensureSchema();
+  const code = raw.trim().toUpperCase();
+  if (!code) return { ok: false as const, error: "Entre le code licence." };
+  const rows = await sql()`select id, days, reserved_public_id, redeemed_user_id from license_keys where code = ${code} limit 1`;
+  const key = rows[0] as { id: string; days: number; reserved_public_id: string; redeemed_user_id: string | null } | undefined;
+  if (!key) return { ok: false as const, error: "Code invalide." };
+  if (key.redeemed_user_id) return { ok: false as const, error: "Code déjà utilisé." };
+  if (key.reserved_public_id && key.reserved_public_id !== publicId.toUpperCase()) {
+    return { ok: false as const, error: "Ce code est réservé à un autre ID." };
+  }
+  const days = Number(key.days) === 7 ? 7 : 30;
   await sql()`
     insert into licenses (id, user_id, days, starts_at, ends_at, note)
-    values (${randomUUID()}, ${user.id}, ${days}, now(), now() + (${days} || ' days')::interval, ${note})
+    values (${randomUUID()}, ${userId}, ${days}, now(), now() + (${String(days)} || ' days')::interval, ${code})
   `;
+  await sql()`update license_keys set redeemed_user_id = ${userId}, redeemed_at = now() where id = ${key.id}`;
   return { ok: true as const };
 }
