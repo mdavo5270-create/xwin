@@ -30,13 +30,10 @@ async function log(action: string, resource: string) {
   await sql()`insert into audit_logs (id, actor, action, resource) values (${randomUUID()}, ${"admin"}, ${action}, ${resource})`;
 }
 function buildPick(form: FormData) {
-  const market = String(form.get("market") ?? "1x2");
-  const sel = String(form.get("selection") ?? "1");
-  const line = String(form.get("line") ?? "").trim();
-  if (market === "over") return `${sel} ${line || "2.5"}`.trim();
-  if (market === "btts") return sel.startsWith("BTTS") ? sel : `BTTS-${sel}`;
-  if (market === "ah") return `AH ${line || "-1"} ${sel}`;
-  return sel;
+  const market = String(form.get("market") ?? "").trim();
+  const sel = String(form.get("selection") ?? "").trim();
+  if (market && sel) return `${market} · ${sel}`;
+  return sel || market;
 }
 function pronoFromForm(form: FormData) {
   const home = String(form.get("home") ?? "").trim();
