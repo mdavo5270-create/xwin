@@ -98,10 +98,30 @@ a:focus-visible, button:focus-visible, input:focus-visible {
 
 .pub-foot {
   border-top: 1px solid var(--line);
-  padding: 1.5rem 1.2rem calc(5.8rem + env(safe-area-inset-bottom));
-  color: var(--muted); font-size: .8rem;
-  display: flex; flex-wrap: wrap; gap: .7rem 1.3rem;
+  padding: 2.2rem 1.2rem calc(6rem + env(safe-area-inset-bottom));
+  color: var(--muted); font-size: .85rem;
 }
+.foot-top { display: grid; gap: 1.6rem; }
+.foot-brand { max-width: 26rem; }
+.foot-brand .logo img { height: 26px; }
+.foot-brand p { margin-top: .7rem; font-size: .84rem; }
+.foot-cols { display: grid; gap: 1.4rem; grid-template-columns: repeat(2, 1fr); }
+.foot-col h4 {
+  font-size: .68rem; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--paper); margin: 0 0 .7rem; font-weight: 700;
+}
+.foot-col { display: grid; gap: .5rem; }
+.foot-col a:hover { color: var(--paper); }
+.foot-bottom {
+  border-top: 1px solid var(--line); margin-top: 1.8rem; padding-top: 1.2rem;
+  display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; justify-content: space-between;
+  font-size: .76rem;
+}
+@media (min-width: 720px) {
+  .foot-top { grid-template-columns: 1.2fr 2fr; }
+  .foot-cols { grid-template-columns: repeat(4, 1fr); }
+}
+@media (min-width: 860px) { .pub-foot { padding: 2.4rem 1.6rem calc(6rem + env(safe-area-inset-bottom)); } }
 
 .hero {
   max-width: 1180px; margin: 0 auto;
@@ -148,6 +168,12 @@ a.card:hover { border-color: rgba(200,245,66,.35); }
   background: var(--surface-2); color: var(--muted);
 }
 .badge.pay { background: var(--accent-wash); color: var(--accent); }
+.badge.win { background: rgba(125, 255, 106, 0.12); color: var(--win); }
+.badge.loss { background: rgba(255, 107, 90, 0.12); color: var(--loss); }
+.stat-num {
+  display: block; font-family: var(--font-display), Syne, sans-serif;
+  font-size: 2rem; line-height: 1.05; margin-top: .3rem;
+}
 .empty {
   border: 1px dashed var(--line-strong); border-radius: 18px;
   padding: 1.3rem; color: var(--muted);
@@ -198,7 +224,6 @@ input, textarea, select {
 @media (min-width: 860px) {
   .pub-nav { display: flex; }
   .hero { grid-template-columns: 1.35fr .65fr; align-items: end; }
-  .pub-foot { padding: 2rem 1.6rem; }
   .pub-head { padding: 1rem 1.6rem; }
   .app { grid-template-columns: 240px 1fr; }
   .side { display: flex; }
