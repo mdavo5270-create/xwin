@@ -68,6 +68,9 @@ export async function ensureLaunchTickets() {
       stakeUnits: "0.5",
     },
   ];
-  for (const t of tickets) await createProno(t);
+  // Inserts indépendants (pas de dépendance entre eux) : en parallèle
+  // plutôt qu'un for/await séquentiel, pour ne pas empiler 4 allers-retours
+  // HTTP l'un après l'autre sur le tout premier accueil affiché.
+  await Promise.all(tickets.map((t) => createProno(t)));
   done = true;
 }
