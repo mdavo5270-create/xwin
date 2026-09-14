@@ -16,10 +16,11 @@ export function HubShell({
   children,
 }: {
   member: Member | null;
-  tab: (typeof TABS)[number]["href"];
+  tab: string;
   children: React.ReactNode;
 }) {
   const title = member?.publicId || (member ? member.name : "Invité");
+  const active = tab === "/pronostics" ? "/accueil" : tab;
   return (
     <div className="hub">
       <div className="hub-frame">
@@ -34,7 +35,7 @@ export function HubShell({
         </header>
         <nav className="hub-tabs">
           {TABS.map((t) => (
-            <Link key={t.href} className={t.href === tab ? "on" : ""} href={t.href}>{t.label}</Link>
+            <Link key={t.href} className={t.href === active ? "on" : ""} href={t.href}>{t.label}</Link>
           ))}
         </nav>
         {children}
