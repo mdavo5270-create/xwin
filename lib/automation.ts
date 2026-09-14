@@ -60,7 +60,7 @@ export async function runPronoAutomation(): Promise<AutoReport> {
   const report: AutoReport = { at: now.toISOString(), published: [], live: [], settled: [], skipped: [] };
 
   try {
-    report.feed = await ingestUpcomingFixtures(8);
+    report.feed = await ingestUpcomingFixtures();
     await audit("auto-feed", `${report.feed.created} tickets`);
   } catch {
     report.skipped.push({ id: "feed", reason: "calendrier indisponible" });
