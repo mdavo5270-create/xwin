@@ -4,45 +4,23 @@ import logo from "@/public/logo-full.png";
 import { adminHref } from "@/lib/admin-path";
 
 const LINKS = [
-  // Main
-  ["", "📊 Vue générale"],
-  
-  // Content Management
-  ["predictions", "🎯 Pronostics"],
-  ["offers", "💰 Offres"],
-  ["subscriptions", "📋 Abonnements"],
-  ["results", "✓ Résultats"],
-  
-  // Analytics
-  ["analyses", "📈 Analyses"],
-  ["stats", "📉 Statistiques"],
-  
-  // Setup
-  ["sports", "⚽ Sports"],
-  ["competitions", "🏆 Compétitions"],
-  ["content", "📝 Contenu"],
-  ["automation", "⚙️ Automatisation"],
-  
-  // Operations
-  ["users", "👥 Utilisateurs"],
-  ["orders", "📦 Commandes"],
-  ["payments", "💳 Paiements"],
-  
-  // Admin
-  ["admins", "👨‍💼 Administrateurs"],
-  ["profile", "👤 Mon Profil"],
-  ["audit-logs", "📋 Journal"],
-  ["security", "🔒 Sécurité"],
-  ["settings", "⚙️ Paramètres"],
+  ["", "Vue générale"],
+  ["predictions", "Pronostics"],
+  ["offers", "Offres"],
+  ["results", "Résultats"],
+  ["automation", "Automatisation"],
+  ["stats", "Statistiques"],
+  ["users", "Utilisateurs"],
+  ["settings", "Paramètres"],
 ] as const;
 
 export function AdminChrome({ children }: { children: React.ReactNode }) {
   return (
-    <div className="app admin-app">
-      <aside className="side">
-        <Link className="logo admin-logo" href={adminHref()}>
-          <Image src={logo} alt="XWIN" />
-          <span className="admin-tag">Ops</span>
+    <div className="admin-shell">
+      <aside className="admin-side">
+        <Link className="admin-brand" href={adminHref()}>
+          <Image src={logo} alt="XWIN" width={92} height={24} />
+          <span>Ops</span>
         </Link>
         <nav>
           {LINKS.map(([path, label]) => (
@@ -50,9 +28,7 @@ export function AdminChrome({ children }: { children: React.ReactNode }) {
           ))}
         </nav>
       </aside>
-      <div className="main">
-        <div className="content admin-content">{children}</div>
-      </div>
+      <div className="admin-main">{children}</div>
     </div>
   );
 }
