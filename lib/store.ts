@@ -139,9 +139,31 @@ export async function getPerformanceSummary(sport?: string) {
     sampleOk: settled >= 30,
   };
 }
+export async function listActionablePronos() {
+  if (!hasDatabase()) return mem().pronos.filter((p) => p.status !== "settled");
+  const rows = await sql()`select * from pronos where status <> 'settled' order by created_at desc`;
+  return rows.map((r) => mapProno(r as Record<string, unknown>));
+}
+export async function listAllPronosPage(opts: { limit: number; offset: number }) {
+  const { limit, offset } = opts;
+  if (!hasDatabase()) {
+    const rows = [...mem().pronos];
+    return { rows: rows.slice(offset, offset + limit), total: rows.length };
+  }
+  const rows = await sql()`
+    select *, count(*) over() as total_count from pronos
+    order by created_at desc limit ${limit} offset ${offset}`;
+  const total = rows.length ? Number(rows[0].total_count) : 0;
+  return { rows: rows.map((r) => mapProno(r as Record<string, unknown>)), total };
+}
 export async function listAllPronos() {
   if (!hasDatabase()) return [...mem().pronos];
   return (await sql()`select * from pronos order by created_at desc`).map(mapProno);
+}
+export async function countAllPronos() {
+  if (!hasDatabase()) return mem().pronos.length;
+  const rows = await sql()`select count(*)::int as n from pronos`;
+  return Number((rows[0] as Record<string, unknown>).n);
 }
 export async function getProno(id: string) {
   if (!hasDatabase()) return mem().pronos.find((p) => p.id === id) ?? null;

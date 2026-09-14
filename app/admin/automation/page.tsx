@@ -1,6 +1,6 @@
 import { AdminChrome } from "@/components/AdminChrome";
 import { runPronoAutomation } from "@/lib/automation";
-import { listAllPronos } from "@/lib/store";
+import { listActionablePronos } from "@/lib/store";
 import { ensureSchema } from "@/lib/schema";
 import { revalidatePath } from "next/cache";
 
@@ -14,7 +14,7 @@ async function runNow() {
 
 export default async function AdminAutomationPage() {
   await ensureSchema();
-  const pronos = await listAllPronos();
+  const pronos = await listActionablePronos();
   const pending = pronos.filter((p) => p.result === "pending");
   return (
     <AdminChrome>

@@ -1,13 +1,13 @@
 import { hasDatabase } from "./db";
-import { createProno, listAllPronos } from "./store";
+import { createProno, countAllPronos } from "./store";
 
 let done = false;
 
 /** Premier remplissage uniquement si la table est vide — tickets pending, aucun résultat inventé. */
 export async function ensureLaunchTickets() {
   if (done) return;
-  const existing = await listAllPronos();
-  if (existing.length > 0) {
+  const existing = await countAllPronos();
+  if (existing > 0) {
     done = true;
     return;
   }

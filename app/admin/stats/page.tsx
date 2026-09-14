@@ -1,12 +1,11 @@
 import { countUsers } from "@/lib/admin-data";
-import { listAllPronos } from "@/lib/store";
-import { computePerformance } from "@/lib/performance";
+import { getPerformanceSummary } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
   const users = await countUsers();
-  const s = computePerformance(await listAllPronos());
+  const s = await getPerformanceSummary();
   return (
     <>
       <h1>Statistiques</h1>
