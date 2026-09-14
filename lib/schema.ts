@@ -58,6 +58,14 @@ export async function ensureSchema() {
       ends_at timestamptz NOT NULL,
       note text NOT NULL DEFAULT '',
       created_at timestamptz NOT NULL DEFAULT now())`,
+    sql()`CREATE TABLE IF NOT EXISTS license_keys (
+      id uuid PRIMARY KEY,
+      code text UNIQUE NOT NULL,
+      days int NOT NULL,
+      reserved_public_id text NOT NULL DEFAULT '',
+      redeemed_user_id uuid REFERENCES users(id) ON DELETE SET NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      redeemed_at timestamptz)`,
   ]);
 
   await sql()`CREATE UNIQUE INDEX IF NOT EXISTS users_public_id_idx ON users (public_id) WHERE public_id IS NOT NULL`;
