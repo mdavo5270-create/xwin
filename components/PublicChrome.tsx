@@ -11,7 +11,7 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
           <Image src={logo} alt="XWIN" priority />
         </Link>
         <nav className="pub-nav">
-          <Link href="/pronostics">Pronostics</Link>
+          <Link href="/pronostics">Matchs</Link>
           <Link href="/resultats">Historique</Link>
           <Link href="/montantes">Montantes</Link>
           <Link href="/analyses">Analyses</Link>
@@ -28,9 +28,9 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
       </header>
       <div className="site-body">{children}</div>
       <nav className="pub-mobile">
-        <Link href="/">Home</Link>
-        <Link href="/pronostics">Pronos</Link>
-        <Link href="/resultats">Book</Link>
+        <Link href="/">Matchs</Link>
+        <Link href="/pronostics">Liste</Link>
+        <Link href="/resultats">Bilan</Link>
         <Link href="/premium">Offres</Link>
         <Link href={member ? "/app" : "/connexion"}>Moi</Link>
       </nav>
