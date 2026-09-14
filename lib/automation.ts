@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { hasDatabase, sql } from "./db";
 import { ensureSchema } from "./schema";
 import { listActionablePronos, settleProno } from "./store";
+import { ingestUpcomingFixtures, type FeedReport } from "./feed";
 import type { Prono } from "./types";
 
 export type AutoReport = {
@@ -10,6 +11,7 @@ export type AutoReport = {
   live: string[];
   settled: { id: string; result: string }[];
   skipped: { id: string; reason: string }[];
+  feed?: FeedReport;
 };
 
 function parseKickoff(value: string): Date | null {
@@ -27,17 +29,9 @@ function decide(pick: string, score: { home: number; away: number }): "hit" | "m
   if (under) return total < Number(under[2].replace(",", ".")) ? "hit" : "miss";
   if (p.includes("btts") && (p.includes("oui") || p.includes("yes"))) return score.home > 0 && score.away > 0 ? "hit" : "miss";
   if (p.includes("btts") && (p.includes("non") || p.includes("no"))) return score.home === 0 || score.away === 0 ? "hit" : "miss";
-  const ah = p.match(/ah\s*([+-]?[0-9]+(?:[.,][0-9]+)?)\s*(1|2|home|away)?/);
-  if (ah) {
-    const line = Number(ah[1].replace(",", "."));
-    const side = ah[2] || "1";
-    const adj = side === "2" || side === "away" ? score.away + line - score.home : score.home + line - score.away;
-    if (adj === 0) return null;
-    return adj > 0 ? "hit" : "miss";
-  }
   if (/\b(nul|draw|x)\b/.test(p) || p.includes("match nul")) return score.home === score.away ? "hit" : "miss";
   if (/\b(2|away|ext[eé]rieur)\b/.test(p)) return score.away > score.home ? "hit" : "miss";
-  if (/\b(1|home|domicile)\b/.test(p) || p === "1") return score.home > score.away ? "hit" : "miss";
+  if (/\b(1|home|domicile)\b/.test(p) || p.endsWith(" · 1") || p === "1") return score.home > score.away ? "hit" : "miss";
   return null;
 }
 
@@ -48,7 +42,7 @@ async function lookupFinishedScore(eventName: string): Promise<{ home: number; a
   const res = await fetch(url, { next: { revalidate: 0 } });
   if (!res.ok) return null;
   const data = (await res.json()) as {
-    event?: Array<{ strStatus?: string; intHomeScore?: string; intAwayScore?: string }>;
+    event?: Array<{ intHomeScore?: string; intAwayScore?: string }>;
   };
   const ev = data.event?.[0];
   if (!ev || ev.intHomeScore == null || ev.intAwayScore == null) return null;
@@ -64,36 +58,33 @@ export async function runPronoAutomation(): Promise<AutoReport> {
   await ensureSchema();
   const now = new Date();
   const report: AutoReport = { at: now.toISOString(), published: [], live: [], settled: [], skipped: [] };
-  const all = await listActionablePronos();
 
+  try {
+    report.feed = await ingestUpcomingFixtures(8);
+    await audit("auto-feed", `${report.feed.created} tickets`);
+  } catch {
+    report.skipped.push({ id: "feed", reason: "calendrier indisponible" });
+  }
+
+  const all = await listActionablePronos();
   for (const p of all) {
     const kick = parseKickoff(p.kickoff);
     if (p.status === "draft") {
       if (kick && kick.getTime() - now.getTime() <= 6 * 60 * 60 * 1000 && kick.getTime() > now.getTime() - 30 * 60 * 1000) {
         if (hasDatabase()) await sql()`update pronos set status = 'published' where id = ${p.id}`;
-        else p.status = "published";
         report.published.push(p.id);
         await audit("auto-publish", p.id);
-      } else report.skipped.push({ id: p.id, reason: "draft hors fenêtre T-6h" });
+      }
       continue;
     }
     if (p.status === "published" && p.result === "pending" && kick && kick.getTime() <= now.getTime()) {
       report.live.push(p.id);
-      if (now.getTime() - kick.getTime() < 2 * 60 * 60 * 1000) {
-        report.skipped.push({ id: p.id, reason: "match encore trop tôt pour solder" });
-        continue;
-      }
+      if (now.getTime() - kick.getTime() < 2 * 60 * 60 * 1000) continue;
       try {
         const score = await lookupFinishedScore(p.eventName);
-        if (!score) {
-          report.skipped.push({ id: p.id, reason: "score introuvable" });
-          continue;
-        }
+        if (!score) continue;
         const result = decide(p.pick, score);
-        if (!result) {
-          report.skipped.push({ id: p.id, reason: "marché non décidable auto" });
-          continue;
-        }
+        if (!result) continue;
         await settleProno(p.id, result);
         report.settled.push({ id: p.id, result });
         await audit(`auto-settle:${result}`, p.id);
