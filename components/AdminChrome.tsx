@@ -4,25 +4,36 @@ import logo from "@/public/logo-full.png";
 import { adminHref } from "@/lib/admin-path";
 
 const LINKS = [
-  ["", "Vue générale"],
-  ["users", "Utilisateurs"],
-  ["predictions", "Pronostics"],
-  ["automation", "Automatisation"],
-  ["results", "Résultats"],
-  ["analyses", "Analyses"],
-  ["sports", "Sports"],
-  ["competitions", "Compétitions"],
-  ["offers", "Offres"],
-  ["orders", "Commandes"],
-  ["payments", "Paiements"],
-  ["subscriptions", "Abonnements"],
-  ["notifications", "Notifications"],
-  ["stats", "Statistiques"],
-  ["content", "Contenu"],
-  ["admins", "Administrateurs"],
-  ["audit-logs", "Journal"],
-  ["security", "Sécurité"],
-  ["settings", "Paramètres"],
+  // Main
+  ["", "📊 Vue générale"],
+  
+  // Content Management
+  ["predictions", "🎯 Pronostics"],
+  ["offers", "💰 Offres"],
+  ["subscriptions", "📋 Abonnements"],
+  ["results", "✓ Résultats"],
+  
+  // Analytics
+  ["analyses", "📈 Analyses"],
+  ["stats", "📉 Statistiques"],
+  
+  // Setup
+  ["sports", "⚽ Sports"],
+  ["competitions", "🏆 Compétitions"],
+  ["content", "📝 Contenu"],
+  ["automation", "⚙️ Automatisation"],
+  
+  // Operations
+  ["users", "👥 Utilisateurs"],
+  ["orders", "📦 Commandes"],
+  ["payments", "💳 Paiements"],
+  
+  // Admin
+  ["admins", "👨‍💼 Administrateurs"],
+  ["profile", "👤 Mon Profil"],
+  ["audit-logs", "📋 Journal"],
+  ["security", "🔒 Sécurité"],
+  ["settings", "⚙️ Paramètres"],
 ] as const;
 
 export function AdminChrome({ children }: { children: React.ReactNode }) {
