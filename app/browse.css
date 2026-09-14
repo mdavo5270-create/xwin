@@ -1,92 +1,23 @@
-.billboard {
-  min-height: auto;
-  padding: 1.2rem 1.2rem 1rem;
-  background: transparent;
-  border-bottom: 1px solid var(--line);
-}
+.billboard { min-height: auto; padding: 1.2rem 1.2rem 1rem; background: transparent; border-bottom: 1px solid var(--line); }
 .billboard h1 { max-width: 16ch; font-size: clamp(1.6rem, 6vw, 2.4rem); }
 .billboard .meta { color: var(--muted); }
-.rail { margin: 1.2rem 0 1.4rem; }
-.rail-title {
-  font-size: 1.05rem; margin: 0 1rem .6rem; border: 0; padding: 0;
-}
-.rail-track {
-  display: flex; gap: .7rem; overflow-x: auto;
-  padding: 0 1rem .4rem;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-}
-.rail-track::-webkit-scrollbar { display: none; }
-.tile {
-  flex: 0 0 min(78vw, 260px);
-  scroll-snap-align: start;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: .85rem .95rem;
-  min-height: 132px;
-  display: flex; flex-direction: column; gap: .15rem;
-}
-.tile h3 { font-size: 1.05rem; margin: .15rem 0; }
-.sport-tiles {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: .7rem;
-  margin: 1rem 0 1.6rem;
-}
-.sport-tile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .3rem;
-  text-align: center;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 1rem .6rem;
-  text-decoration: none;
-  color: inherit;
-  transition: border-color .15s ease, transform .15s ease;
-}
-.sport-tile:hover { border-color: var(--accent); transform: translateY(-2px); }
-.sport-tile.disabled {
-  opacity: .4;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-.sport-tile-mark { font-size: 1.6rem; }
-.sport-tile-label { font-family: var(--font-display), Syne, sans-serif; font-size: .92rem; letter-spacing: -.01em; }
+.sport-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: .7rem; margin: 1rem 0 1.6rem; }
+.sport-tile { display: flex; flex-direction: column; align-items: center; gap: .3rem; text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 1rem .6rem; text-decoration: none; color: inherit; }
+.sport-tile:hover { border-color: var(--accent); }
+.sport-tile.disabled { opacity: .4; pointer-events: none; }
+.sport-tile-mark { width: 1.7rem; height: 1.7rem; color: var(--accent); }
+.sport-tile-label { font-family: var(--font-display), Syne, sans-serif; font-size: .92rem; }
 .sport-tile-count { font-size: .68rem; color: var(--muted); }
 .fix-list { display: grid; gap: 0; margin-top: 1rem; border-top: 1px solid var(--line); }
-.fix {
-  display: grid;
-  grid-template-columns: 1.6rem 6.4rem 1fr auto;
-  gap: .7rem;
-  align-items: center;
-  padding: .85rem 0;
-  border-bottom: 1px solid var(--line);
-}
-.fix-mark { font-size: 1.05rem; }
-.fix-when {
-  font-family: var(--font-mono), monospace;
-  font-size: .72rem;
-  color: var(--muted);
-  line-height: 1.25;
-}
+.fix { display: grid; grid-template-columns: 1.6rem 6.4rem 1fr auto; gap: .7rem; align-items: center; padding: .85rem 0; border-bottom: 1px solid var(--line); }
+.fix-mark { width: 1.15rem; height: 1.15rem; color: var(--muted); }
+.fix-when { font-family: var(--font-mono), monospace; font-size: .72rem; color: var(--muted); line-height: 1.25; }
 .fix-main { min-width: 0; display: grid; gap: .12rem; }
-.fix-main strong {
-  font-family: var(--font-display), Syne, sans-serif;
-  font-size: 1rem;
-  letter-spacing: -.02em;
-}
+.fix-main strong { font-family: var(--font-display), Syne, sans-serif; font-size: 1rem; }
 .fix-main em { font-style: normal; color: var(--muted); font-size: .78rem; }
 .programme h1 { font-size: clamp(1.7rem, 7vw, 2.6rem); }
 @media (max-width: 640px) {
   .fix { grid-template-columns: 1.4rem 1fr auto; }
-  .fix-when { grid-column: 2; font-size: .7rem; }
+  .fix-when { grid-column: 2; }
   .fix-main { grid-column: 2; }
-}
-@media (min-width: 860px) {
-  .billboard, .rail-title, .rail-track { padding-left: 1.6rem; padding-right: 1.6rem; }
-  .tile { flex-basis: 240px; }
 }

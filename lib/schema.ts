@@ -15,6 +15,9 @@ export async function ensureSchema() {
   await sql()`ALTER TABLE pronos ADD COLUMN IF NOT EXISTS odd text NOT NULL DEFAULT ''`;
   await sql()`ALTER TABLE pronos ADD COLUMN IF NOT EXISTS confidence text NOT NULL DEFAULT ''`;
   await sql()`ALTER TABLE pronos ADD COLUMN IF NOT EXISTS stake_units text NOT NULL DEFAULT '1'`;
+  await sql()`CREATE INDEX IF NOT EXISTS pronos_created_at_idx ON pronos (created_at DESC)`;
+  await sql()`CREATE INDEX IF NOT EXISTS pronos_sport_created_at_idx ON pronos (sport, created_at DESC)`;
+  await sql()`CREATE INDEX IF NOT EXISTS pronos_status_result_idx ON pronos (status, result)`;
   await sql()`CREATE TABLE IF NOT EXISTS analyses (
     id uuid PRIMARY KEY, title text NOT NULL, slug text UNIQUE NOT NULL,
     sport text NOT NULL DEFAULT '', body text NOT NULL, status text NOT NULL DEFAULT 'draft',

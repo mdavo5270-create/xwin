@@ -2,20 +2,13 @@ import Link from "next/link";
 import type { Prono } from "@/lib/types";
 import { sportLabel } from "@/lib/sports";
 import { formatKickoff, formatDateTime } from "@/lib/format-date";
-
-const MARK: Record<string, string> = {
-  football: "⚽",
-  tennis: "🎾",
-  basketball: "🏀",
-  hockey: "🏒",
-  esports: "🎮",
-};
+import { SportIcon } from "./SportIcon";
 
 export function FixtureRow({ p }: { p: Prono }) {
   const when = p.kickoff ? formatKickoff(p.kickoff) : formatDateTime(p.createdAt);
   return (
     <Link className="fix" href={`/pronostics/${p.id}`}>
-      <span className="fix-mark" aria-hidden>{MARK[p.sport] ?? "•"}</span>
+      <SportIcon slug={p.sport} className="fix-mark" />
       <span className="fix-when">{when}</span>
       <span className="fix-main">
         <strong>{p.eventName}</strong>
