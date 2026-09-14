@@ -23,6 +23,7 @@
   text-align: center;
   font-size: 2.4rem;
   margin: 0 0 .35rem;
+  color: #fff;
 }
 .gate-auth .gate-tag { text-align: center; margin: 0 0 1.4rem; }
 .gate-switch {
@@ -44,13 +45,33 @@
   background: #1f9d4a;
   color: #fff;
 }
-.gate-auth input {
-  background: #1c1e22;
-  border: 0;
-  border-radius: 16px;
-  padding: 1rem 1rem;
+.gate-field {
+  display: block;
+  margin: .55rem 0;
 }
-.gate-auth label { color: transparent; font-size: 0; margin: .45rem 0; }
+.gate-auth input,
+.gate-field input {
+  display: block;
+  width: 100%;
+  background: #2a2d33 !important;
+  color: #f4f4f5 !important;
+  border: 1px solid #3a3e46 !important;
+  border-radius: 16px !important;
+  padding: 1rem 1rem !important;
+  font-size: 1rem !important;
+  caret-color: #3ddc6a;
+}
+.gate-auth input::placeholder,
+.gate-field input::placeholder {
+  color: #9aa3b0 !important;
+  opacity: 1 !important;
+}
+.gate-auth input:focus,
+.gate-field input:focus {
+  outline: 2px solid #1f9d4a;
+  outline-offset: 2px;
+  background: #32363e !important;
+}
 .gate-cta {
   width: 100%;
   margin-top: .7rem;
