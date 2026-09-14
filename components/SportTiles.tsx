@@ -1,21 +1,6 @@
 import Link from "next/link";
 import { SPORTS } from "@/lib/sports";
-
-const MARK: Record<string, string> = {
-  football: "⚽",
-  basketball: "🏀",
-  tennis: "🎾",
-  rugby: "🏉",
-  hockey: "🏒",
-  "formula-1": "🏎️",
-  mma: "🥊",
-  volleyball: "🏐",
-  handball: "🤾",
-  "esport-lol": "🎮",
-  "esport-cs": "🎮",
-  "esport-valorant": "🎮",
-  "esport-dota": "🎮",
-};
+import { SportIcon } from "./SportIcon";
 
 export function SportTiles({ counts }: { counts: Record<string, number> }) {
   return (
@@ -25,21 +10,15 @@ export function SportTiles({ counts }: { counts: Record<string, number> }) {
         const active = count > 0;
         const content = (
           <>
-            <span className="sport-tile-mark" aria-hidden>{MARK[sport.slug] ?? "•"}</span>
+            <SportIcon slug={sport.slug} className="sport-tile-mark" />
             <span className="sport-tile-label">{sport.label}</span>
-            <span className="sport-tile-count">
-              {active ? `${count} match${count > 1 ? "s" : ""}` : "Aucun match"}
-            </span>
+            <span className="sport-tile-count">{active ? `${count} match${count > 1 ? "s" : ""}` : "Aucun match"}</span>
           </>
         );
         return active ? (
-          <Link key={sport.slug} className="sport-tile" href={`/sports/${sport.slug}`}>
-            {content}
-          </Link>
+          <Link key={sport.slug} className="sport-tile" href={`/sports/${sport.slug}`}>{content}</Link>
         ) : (
-          <div key={sport.slug} className="sport-tile disabled" aria-disabled="true">
-            {content}
-          </div>
+          <div key={sport.slug} className="sport-tile disabled" aria-disabled="true">{content}</div>
         );
       })}
     </div>
