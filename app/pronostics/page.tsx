@@ -23,7 +23,7 @@ export default async function PronosticsPage() {
     bySport.set(m.sport, list);
   }
   return (
-    <HubShell member={member} tab="/pronostics">
+    <HubShell member={member} tab="/accueil">
       <div className="hub-body">
         <h1>Sports</h1>
         {open.length === 0 ? (
