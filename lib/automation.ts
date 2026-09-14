@@ -1,7 +1,7 @@
 import { randomUUID } from "crypto";
 import { hasDatabase, sql } from "./db";
 import { ensureSchema } from "./schema";
-import { listAllPronos, settleProno } from "./store";
+import { listActionablePronos, settleProno } from "./store";
 import type { Prono } from "./types";
 
 export type AutoReport = {
@@ -54,7 +54,7 @@ export async function runPronoAutomation(): Promise<AutoReport> {
   await ensureSchema();
   const now = new Date();
   const report: AutoReport = { at: now.toISOString(), published: [], live: [], settled: [], skipped: [] };
-  const all = await listAllPronos();
+  const all = await listActionablePronos();
 
   for (const p of all) {
     const kick = parseKickoff(p.kickoff);
