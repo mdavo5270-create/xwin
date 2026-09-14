@@ -14,11 +14,13 @@ export default async function ServicePage() {
     <PublicChrome member={member}>
       <section className="billboard">
         <p className="kicker">Service</p>
-        <h1>Stratégies, expliquées avant d’être vendues.</h1>
-        <p className="meta">Prix en base. Encaissement coupé.</p>
+        <h1>Des méthodes de jeu, pas un ticket isolé.</h1>
+        <p className="meta">Martingale, lecture d’image, séries encadrées. Les prix sont là. Le paiement n’est pas encore ouvert.</p>
       </section>
       <main className="wrap">
-        {rows.length === 0 ? <p className="empty">Aucun service publié.</p> : (
+        {rows.length === 0 ? (
+          <p className="empty">Aucune méthode publiée pour l’instant. Elles apparaîtront ici dès qu’une offre « service » est activée dans l’admin.</p>
+        ) : (
           <div className="grid two">
             {rows.map((s) => (
               <section className="card" key={s.id}>

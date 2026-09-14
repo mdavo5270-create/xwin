@@ -13,6 +13,7 @@ import type { PronoResult } from "@/lib/types";
 import { adminHref } from "@/lib/admin-path";
 import { logAdminSession, setSetting } from "@/lib/commerce";
 import type { OfferType } from "@/lib/offers";
+import { runPronoAutomation } from "@/lib/automation";
 
 export async function loginAction(form: FormData) {
   const ok = await loginAdmin(String(form.get("password") ?? ""));
@@ -28,17 +29,33 @@ async function log(action: string, resource: string) {
   await ensureSchema();
   await sql()`insert into audit_logs (id, actor, action, resource) values (${randomUUID()}, ${"admin"}, ${action}, ${resource})`;
 }
+function buildPick(form: FormData) {
+  const market = String(form.get("market") ?? "1x2");
+  const sel = String(form.get("selection") ?? "1");
+  const line = String(form.get("line") ?? "").trim();
+  if (market === "over") return `${sel} ${line || "2.5"}`.trim();
+  if (market === "btts") return sel.startsWith("BTTS") ? sel : `BTTS-${sel}`;
+  if (market === "ah") return `AH ${line || "-1"} ${sel}`;
+  return sel;
+}
 function pronoFromForm(form: FormData) {
+  const home = String(form.get("home") ?? "").trim();
+  const away = String(form.get("away") ?? "").trim();
+  const eventName = home && away ? `${home} vs ${away}` : String(form.get("eventName") ?? "").trim();
+  const date = String(form.get("kickoffDate") ?? "").trim();
+  const time = String(form.get("kickoffTime") ?? "").trim();
+  const kickoff = date && time ? `${date}T${time}:00` : String(form.get("kickoff") ?? "").trim();
+  const chance = String(form.get("chance") ?? "").trim();
   return {
     sport: String(form.get("sport") ?? ""),
     competition: String(form.get("competition") ?? "").trim(),
-    eventName: String(form.get("eventName") ?? "").trim(),
-    kickoff: String(form.get("kickoff") ?? "").trim(),
-    pick: String(form.get("pick") ?? "").trim(),
+    eventName,
+    kickoff,
+    pick: buildPick(form),
     rationale: String(form.get("rationale") ?? "").trim(),
     isPaid: form.get("isPaid") === "on",
-    odd: String(form.get("odd") ?? "").trim(),
-    confidence: String(form.get("confidence") ?? "").trim(),
+    odd: chance ? `${chance}%` : "",
+    confidence: String(form.get("confidence") ?? "3").trim(),
     stakeUnits: String(form.get("stakeUnits") ?? "1").trim() || "1",
   };
 }
@@ -82,6 +99,12 @@ export async function settleAction(form: FormData) {
   if (!id || !["hit", "miss", "void"].includes(result)) redirect(adminHref("results"));
   await settleProno(id, result);
   await log("settle_prono", `${id}:${result}`);
+  revalidatePath("/resultats");
+  redirect(adminHref("results"));
+}
+export async function runAutoSettleAction() {
+  if (!(await isAdmin())) redirect(adminHref());
+  await runPronoAutomation();
   revalidatePath("/resultats");
   redirect(adminHref("results"));
 }
