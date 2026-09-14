@@ -22,18 +22,18 @@ export default async function ConnexionPage({
         {q.err ? <p className="err">{q.err}</p> : null}
         {signup ? (
           <form action={registerAction}>
-            <label>Prénom<input name="firstName" required placeholder="Prénom" autoComplete="given-name" /></label>
-            <label>Nom<input name="lastName" required placeholder="Nom" autoComplete="family-name" /></label>
-            <label>Email<input name="email" type="email" required placeholder="Adresse email" autoComplete="email" /></label>
-            <label>Mot de passe<input name="password" type="password" minLength={8} required placeholder="Mot de passe" /></label>
-            <label>Confirmer<input name="confirm" type="password" minLength={8} required placeholder="Confirmer mot de passe" /></label>
+            <label className="gate-field"><input name="firstName" required placeholder="Prénom" autoComplete="given-name" /></label>
+            <label className="gate-field"><input name="lastName" required placeholder="Nom" autoComplete="family-name" /></label>
+            <label className="gate-field"><input name="email" type="email" required placeholder="Adresse email" autoComplete="email" /></label>
+            <label className="gate-field"><input name="password" type="password" minLength={8} required placeholder="Mot de passe" /></label>
+            <label className="gate-field"><input name="confirm" type="password" minLength={8} required placeholder="Confirmer mot de passe" /></label>
             <button className="gate-cta" type="submit">S'inscrire</button>
           </form>
         ) : (
           <form action={loginAction}>
             <input type="hidden" name="next" value={q.next ?? "/accueil"} />
-            <label>Email<input name="email" type="email" required placeholder="Email" autoComplete="email" /></label>
-            <label>Mot de passe<input name="password" type="password" required placeholder="Mot de passe" autoComplete="current-password" /></label>
+            <label className="gate-field"><input name="email" type="email" required placeholder="Email" autoComplete="email" /></label>
+            <label className="gate-field"><input name="password" type="password" required placeholder="Mot de passe" autoComplete="current-password" /></label>
             <button className="gate-cta" type="submit">Se Connecter</button>
           </form>
         )}
