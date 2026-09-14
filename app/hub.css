@@ -1,3 +1,4 @@
+/* colonne telephone 430px — ne pas etirer sur desktop */
 html, body { max-width: 100%; overflow-x: hidden; }
 .hub {
   min-height: 100dvh;
