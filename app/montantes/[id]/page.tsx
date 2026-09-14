@@ -14,14 +14,14 @@ export default async function MontantePage({ params }: { params: Promise<{ id: s
   return (
     <PublicChrome member={member}>
       <main className="wrap">
-        <p><Link href="/montantes">← Montantes</Link></p>
+        <p><Link href="/montantes">Retour aux montantes</Link></p>
         <h1>{m.title}</h1>
         <section className="card">
           <p>{m.steps} paliers · {m.cadence === "weekly" ? "hebdo" : "mensuel"}</p>
           <p>Entrée : {m.entryAmount} {m.currency}</p>
           <p style={{ whiteSpace: "pre-wrap" }}>{m.description}</p>
         </section>
-        <button className="btn off" type="button" disabled style={{ marginTop: "1rem" }}>Paiement off</button>
+        <button className="btn" type="button" disabled style={{ marginTop: "1rem" }}>Rejoindre cette montante — paiement pas encore activé</button>
       </main>
     </PublicChrome>
   );

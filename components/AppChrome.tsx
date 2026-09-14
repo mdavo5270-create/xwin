@@ -27,7 +27,6 @@ export function AppChrome({ member, children }: { member: Member; children: Reac
           <Link href="/app/notifications">Notifications</Link>
           <Link href="/app/profil">Profil</Link>
           <Link href="/app/securite">Sécurité</Link>
-          <Link href="/app/parametres">Paramètres</Link>
           <Link href="/">Site public</Link>
         </nav>
         <form action={logoutAction}><button type="submit">Déconnexion</button></form>
