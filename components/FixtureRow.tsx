@@ -7,6 +7,7 @@ const MARK: Record<string, string> = {
   football: "⚽",
   tennis: "🎾",
   basketball: "🏀",
+  hockey: "🏒",
   esports: "🎮",
 };
 

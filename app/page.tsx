@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { PublicChrome } from "@/components/PublicChrome";
-import { FixtureRow } from "@/components/FixtureRow";
+import { SportTiles } from "@/components/SportTiles";
 import { getMember } from "@/lib/members";
 import { listPublishedPronos } from "@/lib/store";
 import { ensureSchema } from "@/lib/schema";
@@ -26,6 +26,11 @@ const PROGRAMMES = [
     title: "Premium",
     text: "Le programme complet du club : tickets, notes de confiance et montantes du mois.",
   },
+  {
+    href: "/service",
+    title: "Service",
+    text: "Nos stratégies (martingale, image et autres), expliquées et vendues à part.",
+  },
 ] as const;
 
 export default async function HomePage() {
@@ -36,6 +41,10 @@ export default async function HomePage() {
   const settled = all.filter((p) => p.result === "hit" || p.result === "miss");
   const recent = settled.slice(0, 6);
   const s = computePerformance(all);
+  const countsBySport = open.reduce<Record<string, number>>((acc, p) => {
+    acc[p.sport] = (acc[p.sport] ?? 0) + 1;
+    return acc;
+  }, {});
 
   return (
     <PublicChrome member={member}>
@@ -71,13 +80,9 @@ export default async function HomePage() {
       </section>
 
       <main className="wrap programme">
-        <h2>Programme du jour</h2>
-        <p className="muted">Sport, ligue, heure. Le pronostic s’ouvre après ton vote.</p>
-        {open.length === 0 ? (
-          <p className="empty">Aucun match publié pour le moment.</p>
-        ) : (
-          <div className="fix-list">{open.map((p) => <FixtureRow key={p.id} p={p} />)}</div>
-        )}
+        <h2>Matchs du jour</h2>
+        <p className="muted">Choisis un sport pour voir tout son programme du jour.</p>
+        <SportTiles counts={countsBySport} />
 
         <h2>Nos programmes</h2>
         <div className="grid three">

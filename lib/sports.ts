@@ -3,6 +3,7 @@ export const SPORTS = [
   { slug: "basketball", label: "Basketball" },
   { slug: "tennis", label: "Tennis" },
   { slug: "rugby", label: "Rugby" },
+  { slug: "hockey", label: "Hockey" },
   { slug: "formula-1", label: "Formule 1" },
   { slug: "mma", label: "MMA" },
   { slug: "volleyball", label: "Volley" },
