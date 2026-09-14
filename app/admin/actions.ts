@@ -29,32 +29,39 @@ async function log(action: string, resource: string) {
   await ensureSchema();
   await sql()`insert into audit_logs (id, actor, action, resource) values (${randomUUID()}, ${"admin"}, ${action}, ${resource})`;
 }
-function buildPick(form: FormData) {
-  const market = String(form.get("market") ?? "").trim();
-  const sel = String(form.get("selection") ?? "").trim();
-  if (market && sel) return `${market} · ${sel}`;
-  return sel || market;
-}
-function pronoFromForm(form: FormData) {
+function matchFromForm(form: FormData) {
   const home = String(form.get("home") ?? "").trim();
   const away = String(form.get("away") ?? "").trim();
   const eventName = home && away ? `${home} vs ${away}` : String(form.get("eventName") ?? "").trim();
   const date = String(form.get("kickoffDate") ?? "").trim();
   const time = String(form.get("kickoffTime") ?? "").trim();
   const kickoff = date && time ? `${date}T${time}:00` : String(form.get("kickoff") ?? "").trim();
-  const chance = String(form.get("chance") ?? "").trim();
   return {
     sport: String(form.get("sport") ?? ""),
     competition: String(form.get("competition") ?? "").trim(),
     eventName,
     kickoff,
-    pick: buildPick(form),
-    rationale: String(form.get("rationale") ?? "").trim(),
-    isPaid: form.get("isPaid") === "on",
-    odd: chance ? `${chance}%` : "",
-    confidence: String(form.get("confidence") ?? "3").trim(),
     stakeUnits: String(form.get("stakeUnits") ?? "1").trim() || "1",
   };
+}
+function ticketsFromForm(form: FormData) {
+  const markets = form.getAll("market").map((v) => String(v).trim());
+  const selections = form.getAll("selection").map((v) => String(v).trim());
+  const chances = form.getAll("chance").map((v) => String(v).trim());
+  const confidences = form.getAll("confidence").map((v) => String(v).trim());
+  const rationales = form.getAll("rationale").map((v) => String(v).trim());
+  const paidFlags = form.getAll("paid").map((v) => String(v));
+  return markets.map((market, i) => {
+    const sel = selections[i] || "";
+    const chance = chances[i] || "";
+    return {
+      pick: market && sel ? `${market} · ${sel}` : sel || market,
+      odd: chance ? `${chance}%` : "",
+      confidence: confidences[i] || "3",
+      rationale: rationales[i] || "",
+      isPaid: paidFlags[i] !== "",
+    };
+  }).filter((t) => t.pick);
 }
 function offerFromForm(form: FormData) {
   const type = String(form.get("type") ?? "abonnement") as OfferType;
@@ -73,8 +80,13 @@ function offerFromForm(form: FormData) {
 export async function createPronoAction(form: FormData) {
   if (!(await isAdmin())) redirect(adminHref());
   await ensureSchema();
-  const created = await createProno({ ...pronoFromForm(form), status: "published" });
-  await log("publish_prono", created.id);
+  const match = matchFromForm(form);
+  const tickets = ticketsFromForm(form);
+  const rows = tickets.length ? tickets : [{ pick: "", odd: "", confidence: "3", rationale: "", isPaid: false }];
+  for (const t of rows) {
+    const created = await createProno({ ...match, ...t, status: "published" });
+    await log("publish_prono", created.id);
+  }
   revalidatePath("/");
   revalidatePath("/pronostics");
   redirect(adminHref("predictions"));
@@ -83,7 +95,9 @@ export async function updatePronoAction(form: FormData) {
   if (!(await isAdmin())) redirect(adminHref());
   const id = String(form.get("id") ?? "");
   if (!id) redirect(adminHref("predictions"));
-  await updateProno(id, pronoFromForm(form));
+  const match = matchFromForm(form);
+  const [ticket] = ticketsFromForm(form);
+  if (ticket) await updateProno(id, { ...match, ...ticket });
   await log("update_prono", id);
   revalidatePath("/");
   revalidatePath("/pronostics");
