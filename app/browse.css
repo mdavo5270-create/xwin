@@ -54,7 +54,7 @@
   cursor: not-allowed;
   pointer-events: none;
 }
-.sport-tile-mark { font-size: 1.6rem; }
+.sport-tile-mark { width: 1.7rem; height: 1.7rem; color: var(--accent); }
 .sport-tile-label { font-family: var(--font-display), Syne, sans-serif; font-size: .92rem; letter-spacing: -.01em; }
 .sport-tile-count { font-size: .68rem; color: var(--muted); }
 .fix-list { display: grid; gap: 0; margin-top: 1rem; border-top: 1px solid var(--line); }
@@ -66,7 +66,7 @@
   padding: .85rem 0;
   border-bottom: 1px solid var(--line);
 }
-.fix-mark { font-size: 1.05rem; }
+.fix-mark { width: 1.15rem; height: 1.15rem; color: var(--muted); }
 .fix-when {
   font-family: var(--font-mono), monospace;
   font-size: .72rem;

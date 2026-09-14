@@ -2,9 +2,8 @@ import Link from "next/link";
 import { PublicChrome } from "@/components/PublicChrome";
 import { SportTiles } from "@/components/SportTiles";
 import { getMember } from "@/lib/members";
-import { listPublishedPronos } from "@/lib/store";
+import { getPerformanceSummary, listRecentSettledPronos, countOpenPronosBySport } from "@/lib/store";
 import { ensureSchema } from "@/lib/schema";
-import { computePerformance } from "@/lib/performance";
 import { formatDateTime } from "@/lib/format-date";
 import "./browse.css";
 
@@ -36,15 +35,11 @@ const PROGRAMMES = [
 export default async function HomePage() {
   await ensureSchema();
   const member = await getMember();
-  const all = await listPublishedPronos();
-  const open = all.filter((p) => p.result === "pending");
-  const settled = all.filter((p) => p.result === "hit" || p.result === "miss");
-  const recent = settled.slice(0, 6);
-  const s = computePerformance(all);
-  const countsBySport = open.reduce<Record<string, number>>((acc, p) => {
-    acc[p.sport] = (acc[p.sport] ?? 0) + 1;
-    return acc;
-  }, {});
+  const [s, recent, countsBySport] = await Promise.all([
+    getPerformanceSummary(),
+    listRecentSettledPronos(6),
+    countOpenPronosBySport(),
+  ]);
 
   return (
     <PublicChrome member={member}>
