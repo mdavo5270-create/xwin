@@ -59,3 +59,11 @@ export function scoreLabel(m: MatchGroup) {
   if (decided === 0) return `${m.tickets.length} ticket${m.tickets.length > 1 ? "s" : ""}`;
   return `${m.hits}/${decided} gagnants`;
 }
+
+export function countOpenMatchesBySport(rows: Prono[]) {
+  const acc: Record<string, number> = {};
+  for (const m of groupMatches(rows.filter((p) => p.result === "pending"))) {
+    acc[m.sport] = (acc[m.sport] ?? 0) + 1;
+  }
+  return acc;
+}
