@@ -15,7 +15,7 @@ export default async function PronosticsPage() {
   return (
     <PublicChrome member={member}>
       <main className="wrap programme">
-        <p className="kicker">Programme</p>
+        <p className="kicker">Matchs du jour</p>
         <h1>Tous les matchs</h1>
         {open.length === 0 ? (
           <p className="empty">Aucun match ouvert.</p>

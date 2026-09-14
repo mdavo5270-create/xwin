@@ -16,6 +16,7 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
           <Link href="/pronostics">Match</Link>
           <Link href="/resultats">Historique</Link>
           <Link href="/premium">Tarifs</Link>
+          <Link href="/service">Service</Link>
         </nav>
         <div className="pub-auth">
           {member ? <Link className="btn-sm" href="/app">Espace</Link> : (
@@ -32,6 +33,7 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
         <Link href="/montantes">Programmes</Link>
         <Link href="/pronostics">Match</Link>
         <Link href="/resultats">Historique</Link>
+        <Link href="/service">Service</Link>
         <Link href={member ? "/app" : "/connexion"}>Moi</Link>
       </nav>
       <footer className="pub-foot">
@@ -46,6 +48,7 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
               <Link href="/pronostics">Pronostics</Link>
               <Link href="/montantes">Montantes</Link>
               <Link href="/premium">Premium</Link>
+              <Link href="/service">Service</Link>
               <Link href="/resultats">Résultats</Link>
               <Link href="/analyses">Analyses</Link>
             </div>

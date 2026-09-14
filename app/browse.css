@@ -28,6 +28,35 @@
   display: flex; flex-direction: column; gap: .15rem;
 }
 .tile h3 { font-size: 1.05rem; margin: .15rem 0; }
+.sport-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: .7rem;
+  margin: 1rem 0 1.6rem;
+}
+.sport-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .3rem;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1rem .6rem;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color .15s ease, transform .15s ease;
+}
+.sport-tile:hover { border-color: var(--accent); transform: translateY(-2px); }
+.sport-tile.disabled {
+  opacity: .4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.sport-tile-mark { font-size: 1.6rem; }
+.sport-tile-label { font-family: var(--font-display), Syne, sans-serif; font-size: .92rem; letter-spacing: -.01em; }
+.sport-tile-count { font-size: .68rem; color: var(--muted); }
 .fix-list { display: grid; gap: 0; margin-top: 1rem; border-top: 1px solid var(--line); }
 .fix {
   display: grid;
