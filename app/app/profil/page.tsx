@@ -11,6 +11,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ o
       <h1>Profil</h1>
       {q.ok ? <p className="card">Enregistré.</p> : null}
       <form action={updateProfileAction} className="card">
+        <p><strong>ID compte</strong><br />{m.publicId || "—"}</p>
         <label>Nom<input name="name" defaultValue={m.name} required /></label>
         <label>Email<input value={m.email} disabled /></label>
         <button className="btn" type="submit">Modifier</button>

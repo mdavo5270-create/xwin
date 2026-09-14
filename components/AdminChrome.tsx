@@ -6,7 +6,7 @@ import { adminHref } from "@/lib/admin-path";
 const GROUPS: { title: string; links: [string, string][] }[] = [
   { title: "", links: [["", "Vue générale"]] },
   { title: "Contenu", links: [["predictions", "Pronostics"], ["results", "Résultats"], ["analyses", "Analyses"], ["automation", "Automatisation"]] },
-  { title: "Vente", links: [["offers", "Offres"], ["subscriptions", "Abonnements"], ["orders", "Commandes"], ["payments", "Paiements"]] },
+  { title: "Vente", links: [["licenses", "Licences"], ["offers", "Offres"], ["subscriptions", "Abonnements"], ["orders", "Commandes"], ["payments", "Paiements"]] },
   { title: "Site", links: [["content", "Messages"], ["users", "Utilisateurs"], ["stats", "Statistiques"], ["audit-logs", "Journal"]] },
   { title: "Compte", links: [["security", "Sécurité"], ["settings", "Paramètres"], ["admins", "Admin"]] },
 ];
