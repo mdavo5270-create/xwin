@@ -3,7 +3,7 @@ export type PronoResult = "pending" | "hit" | "miss" | "void";
 export type MontanteCadence = "weekly" | "monthly";
 export type MontanteStatus = "draft" | "open" | "closed";
 
-export type Member = { id: string; email: string; name: string };
+export type Member = { id: string; email: string; name: string; publicId: string };
 
 export type Prono = {
   id: string;

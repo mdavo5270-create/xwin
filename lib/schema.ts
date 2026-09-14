@@ -12,6 +12,7 @@ export async function ensureSchema() {
     sql()`CREATE TABLE IF NOT EXISTS users (
       id uuid PRIMARY KEY, email text UNIQUE NOT NULL, name text NOT NULL,
       password_hash text NOT NULL, created_at timestamptz NOT NULL DEFAULT now())`,
+    sql()`ALTER TABLE users ADD COLUMN IF NOT EXISTS public_id text`,
     sql()`ALTER TABLE pronos ADD COLUMN IF NOT EXISTS is_paid boolean NOT NULL DEFAULT false`,
     sql()`ALTER TABLE pronos ADD COLUMN IF NOT EXISTS odd text NOT NULL DEFAULT ''`,
     sql()`ALTER TABLE pronos ADD COLUMN IF NOT EXISTS confidence text NOT NULL DEFAULT ''`,
@@ -49,7 +50,17 @@ export async function ensureSchema() {
       ok boolean NOT NULL,
       note text NOT NULL DEFAULT '',
       created_at timestamptz NOT NULL DEFAULT now())`,
+    sql()`CREATE TABLE IF NOT EXISTS licenses (
+      id uuid PRIMARY KEY,
+      user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      days int NOT NULL,
+      starts_at timestamptz NOT NULL DEFAULT now(),
+      ends_at timestamptz NOT NULL,
+      note text NOT NULL DEFAULT '',
+      created_at timestamptz NOT NULL DEFAULT now())`,
   ]);
+
+  await sql()`CREATE UNIQUE INDEX IF NOT EXISTS users_public_id_idx ON users (public_id) WHERE public_id IS NOT NULL`;
 
   await Promise.all([
     sql()`CREATE TABLE IF NOT EXISTS sessions (

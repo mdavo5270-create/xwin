@@ -1,10 +1,11 @@
 import { cookies } from "next/headers";
 import { createHash, createHmac, randomBytes, randomUUID, scryptSync, timingSafeEqual } from "crypto";
-import { sql } from "./db";
+import { hasDatabase, sql } from "./db";
 import { ensureSchema } from "./schema";
 import { safeCompareEqualLength } from "./safe-compare";
 import { rateLimit } from "./rate-limit";
 import { sendMail } from "./mailer";
+import { makePublicId } from "./public-id";
 import type { Member } from "./types";
 
 const COOKIE = "xwin_member";
@@ -32,6 +33,15 @@ function sign(payload: string) {
   return createHmac("sha256", secret()).update(payload).digest("hex");
 }
 
+async function ensurePublicId(userId: string, current?: string | null) {
+  if (current) return current;
+  if (!hasDatabase()) return makePublicId();
+  const code = makePublicId();
+  await sql()`update users set public_id = ${code} where id = ${userId} and (public_id is null or public_id = '')`;
+  const rows = await sql()`select public_id from users where id = ${userId} limit 1`;
+  return String((rows[0] as { public_id?: string } | undefined)?.public_id || code);
+}
+
 export async function registerMember(name: string, email: string, password: string) {
   const limited = await rateLimit("register", 5, 60 * 60);
   if (!limited.ok) {
@@ -45,11 +55,12 @@ export async function registerMember(name: string, email: string, password: stri
   const existing = await sql()`select id from users where email = ${clean} limit 1`;
   if (existing.length) return { ok: false as const, error: "Cet email a déjà un compte." };
   const id = randomUUID();
+  const publicId = makePublicId();
   await sql()`
-    insert into users (id, email, name, password_hash)
-    values (${id}, ${clean}, ${name.trim()}, ${hashPassword(password)})
+    insert into users (id, email, name, password_hash, public_id)
+    values (${id}, ${clean}, ${name.trim()}, ${hashPassword(password)}, ${publicId})
   `;
-  await setMemberCookie({ id, email: clean, name: name.trim() });
+  await setMemberCookie({ id, email: clean, name: name.trim(), publicId });
   return { ok: true as const };
 }
 
@@ -60,12 +71,13 @@ export async function loginMember(email: string, password: string) {
   }
   await ensureSchema();
   const clean = email.trim().toLowerCase();
-  const rows = await sql()`select id, email, name, password_hash from users where email = ${clean} limit 1`;
-  const row = rows[0] as { id: string; email: string; name: string; password_hash: string } | undefined;
+  const rows = await sql()`select id, email, name, password_hash, public_id from users where email = ${clean} limit 1`;
+  const row = rows[0] as { id: string; email: string; name: string; password_hash: string; public_id?: string } | undefined;
   if (!row || !checkPassword(password, row.password_hash)) {
     return { ok: false as const, error: "Email ou mot de passe incorrect." };
   }
-  await setMemberCookie({ id: row.id, email: row.email, name: row.name });
+  const publicId = await ensurePublicId(row.id, row.public_id);
+  await setMemberCookie({ id: row.id, email: row.email, name: row.name, publicId });
   return { ok: true as const };
 }
 
@@ -90,7 +102,6 @@ export async function requestPasswordReset(email: string) {
   const clean = email.trim().toLowerCase();
   const rows = await sql()`select id from users where email = ${clean} limit 1`;
   const row = rows[0] as { id: string } | undefined;
-  // Toujours répondre pareil qu'un compte existe ou non (anti-énumération d'emails).
   if (!row) return { ok: true as const, sent: false as const, link: undefined };
 
   const token = randomBytes(32).toString("hex");
@@ -99,7 +110,7 @@ export async function requestPasswordReset(email: string) {
     insert into password_resets (id, user_id, token_hash, expires_at)
     values (${randomUUID()}, ${row.id}, ${tokenHash}, now() + interval '1 hour')
   `;
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://xwin-mu.vercel.app";
+  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://xwin-q9ze.netlify.app";
   const link = `${base}/reset-password?token=${token}`;
   const mail = await sendMail(clean, "Réinitialise ton mot de passe XWIN", `Lien valable 1 heure : ${link}`);
   return { ok: true as const, sent: mail.sent, link: mail.sent ? undefined : link };
@@ -138,7 +149,12 @@ export async function getMember(): Promise<Member | null> {
   try {
     const data = JSON.parse(Buffer.from(payload, "base64url").toString());
     if (!data?.id || data.exp < Date.now()) return null;
-    return { id: data.id, email: data.email, name: data.name };
+    let publicId = String(data.publicId || "");
+    if (!publicId && hasDatabase()) {
+      await ensureSchema();
+      publicId = await ensurePublicId(data.id);
+    }
+    return { id: data.id, email: data.email, name: data.name, publicId };
   } catch {
     return null;
   }
