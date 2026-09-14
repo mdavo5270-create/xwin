@@ -7,11 +7,8 @@ export const dynamic = "force-dynamic";
 const PAGE_SIZE = 80;
 
 function category(pick: string) {
-  const p = pick.toLowerCase();
-  if (p.includes("over") || p.includes("under") || p.includes("plus") || p.includes("moins")) return "Totals";
-  if (p.includes("btts")) return "Les deux équipes";
-  if (p.includes("ah") || p.includes("handicap")) return "Handicap";
-  return "1 / Nul / 2";
+  const i = pick.indexOf(" · ");
+  return i === -1 ? "Autres" : pick.slice(0, i);
 }
 
 export default async function Page() {

@@ -3,6 +3,13 @@ import { SPORTS } from "@/lib/sports";
 import { adminHref } from "@/lib/admin-path";
 import type { Prono } from "@/lib/types";
 
+function splitPick(pick?: string) {
+  if (!pick) return { market: "", prono: "" };
+  const i = pick.indexOf(" · ");
+  if (i === -1) return { market: "", prono: pick };
+  return { market: pick.slice(0, i), prono: pick.slice(i + 3) };
+}
+
 export function PronoForm({
   action,
   p,
@@ -18,6 +25,7 @@ export function PronoForm({
   const kick = p?.kickoff ? new Date(p.kickoff) : null;
   const dateVal = kick && !Number.isNaN(kick.getTime()) ? kick.toISOString().slice(0, 10) : "";
   const timeVal = kick && !Number.isNaN(kick.getTime()) ? kick.toISOString().slice(11, 16) : "";
+  const { market, prono } = splitPick(p?.pick);
   return (
     <form action={action} className="prono-form">
       {p ? <input type="hidden" name="id" value={p.id} /> : null}
@@ -50,29 +58,23 @@ export function PronoForm({
       </section>
 
       <section className="prono-block">
-        <h2>Marché</h2>
-        <p className="muted">Le « pick », c’est simplement le choix publié : 1, nul ou 2 — ou un autre marché.</p>
-        <label>Catégorie
-          <select name="market" defaultValue="1x2">
-            <option value="1x2">Résultat du match (1 / Nul / 2)</option>
-            <option value="over">Total de buts / points</option>
-            <option value="btts">Les deux équipes marquent</option>
-            <option value="ah">Handicap</option>
-          </select>
-        </label>
-        <fieldset className="prono-picks">
-          <legend>Choix</legend>
-          <label><input type="radio" name="selection" value="1" defaultChecked={!p || p.pick === "1"} /> 1 — domicile</label>
-          <label><input type="radio" name="selection" value="N" defaultChecked={p?.pick === "N" || p?.pick === "X"} /> Nul</label>
-          <label><input type="radio" name="selection" value="2" defaultChecked={p?.pick === "2"} /> 2 — extérieur</label>
-          <label><input type="radio" name="selection" value="Over" /> Plus de</label>
-          <label><input type="radio" name="selection" value="Under" /> Moins de</label>
-          <label><input type="radio" name="selection" value="BTTS-Oui" /> BTTS oui</label>
-          <label><input type="radio" name="selection" value="BTTS-Non" /> BTTS non</label>
-        </fieldset>
+        <h2>Marché et pronostic</h2>
         <div className="prono-grid">
-          <label>Ligne (total ou handicap)
-            <input name="line" placeholder="2.5 ou -1" />
+          <label>Nom du marché
+            <input name="market" list="markets" defaultValue={market} required placeholder="1X2, Plus de 2.5, Handicap -1…" />
+            <datalist id="markets">
+              <option value="1X2" />
+              <option value="Double chance" />
+              <option value="Plus de 2.5" />
+              <option value="Moins de 2.5" />
+              <option value="Les deux équipes marquent" />
+              <option value="Handicap asiatique" />
+              <option value="Score exact" />
+              <option value="Vainqueur" />
+            </datalist>
+          </label>
+          <label>Pronostic
+            <input name="selection" defaultValue={prono} required placeholder="1, Nul, 2, Oui, Over 2.5…" />
           </label>
           <label>Chance estimée (%)
             <input name="chance" type="number" min="1" max="99" defaultValue={p?.odd?.replace("%", "") || ""} placeholder="58" />
@@ -82,7 +84,7 @@ export function PronoForm({
         <div className="star-row">
           {[1, 2, 3, 4, 5].map((n) => (
             <label key={n}>
-              <input type="radio" name="confidence" value={String(n)} defaultChecked={(p?.confidence || "3") === String(n) || n === 3} />
+              <input type="radio" name="confidence" value={String(n)} defaultChecked={String(p?.confidence || "3") === String(n)} />
               <span>{"★".repeat(n)}</span>
             </label>
           ))}
@@ -91,7 +93,7 @@ export function PronoForm({
 
       <section className="prono-block">
         <h2>Analyse</h2>
-        <p className="muted">Le texte que le membre voit après avoir voté : pourquoi ce choix, en quelques phrases.</p>
+        <p className="muted">Le texte que le membre voit après avoir voté.</p>
         <label>
           <textarea name="rationale" rows={8} defaultValue={p?.rationale} required placeholder="Forme, contexte, ce qui pèse pour ce choix." />
         </label>
@@ -102,7 +104,7 @@ export function PronoForm({
 
       <details className="prono-block">
         <summary>Paramètres avancés</summary>
-        <p className="muted">Unité = taille de mise interne (0.5, 1, 2). Pas affiché au public tant que tu ne le décides pas.</p>
+        <p className="muted">Unité = taille de mise interne. Pas affiché au public.</p>
         <label>Unités<input name="stakeUnits" defaultValue={p?.stakeUnits || "1"} /></label>
       </details>
 
