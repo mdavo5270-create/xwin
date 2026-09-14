@@ -4,16 +4,22 @@ import { getMember } from "@/lib/members";
 import { getActiveLicense } from "@/lib/licenses";
 import { listRecentSettledPronos } from "@/lib/store";
 import { ensureSchema } from "@/lib/schema";
+import { activateLicenseAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 const TELEGRAM = "https://t.me/aetuopz";
 
-export default async function AbonnementPage() {
+export default async function AbonnementPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ok?: string; err?: string }>;
+}) {
   await ensureSchema();
   const member = await getMember();
   const license = member ? await getActiveLicense(member.id) : null;
   const recents = await listRecentSettledPronos(6);
+  const q = await searchParams;
 
   return (
     <HubShell member={member} tab="/abonnement">
@@ -31,8 +37,21 @@ export default async function AbonnementPage() {
           )}
         </article>
         <article className="card">
+          <h2>Activer une licence</h2>
+          {q.ok ? <p>Licence activée.</p> : null}
+          {q.err ? <p>{q.err}</p> : null}
+          {member ? (
+            <form action={activateLicenseAction}>
+              <label>Code licence<input name="code" placeholder="LIC-A1B2C3" required autoComplete="off" /></label>
+              <button className="btn" type="submit">Activer</button>
+            </form>
+          ) : (
+            <p className="muted">Connecte-toi pour taper le code.</p>
+          )}
+        </article>
+        <article className="card">
           <h2>7 jours ou 30 jours</h2>
-          <p>Envoie ton ID sur Telegram. On active la licence à la main. Paiement in-app désactivé.</p>
+          <p>Envoie ton ID sur Telegram. Tu reçois un code. Tu le tapes ci-dessus. Paiement in-app désactivé.</p>
           <a className="btn" href={TELEGRAM} target="_blank" rel="noreferrer">Ouvrir Telegram</a>
         </article>
         <h2>Derniers résultats</h2>
