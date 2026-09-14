@@ -13,18 +13,18 @@
   text-align: center;
 }
 .gate-logo { width: min(82vw, 280px); height: auto; }
+.gate-auth .gate-logo {
+  display: block;
+  width: min(70vw, 220px);
+  height: auto;
+  margin: 0 auto .85rem;
+}
 .gate-tag {
   margin-top: 1.2rem;
   color: rgba(255,255,255,.62);
   font-size: .95rem;
 }
 .gate-auth { width: min(26rem, 100%); text-align: left; }
-.gate-auth h1 {
-  text-align: center;
-  font-size: 2.4rem;
-  margin: 0 0 .35rem;
-  color: #fff;
-}
 .gate-auth .gate-tag { text-align: center; margin: 0 0 1.4rem; }
 .gate-switch {
   display: grid;
@@ -45,10 +45,7 @@
   background: #1f9d4a;
   color: #fff;
 }
-.gate-field {
-  display: block;
-  margin: .55rem 0;
-}
+.gate-field { display: block; margin: .55rem 0; }
 .gate-auth input,
 .gate-field input {
   display: block;
@@ -71,6 +68,17 @@
   outline: 2px solid #1f9d4a;
   outline-offset: 2px;
   background: #32363e !important;
+}
+.gate-auth input:-webkit-autofill,
+.gate-auth input:-webkit-autofill:hover,
+.gate-auth input:-webkit-autofill:focus,
+.gate-field input:-webkit-autofill,
+.gate-field input:-webkit-autofill:hover,
+.gate-field input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f4f4f5 !important;
+  caret-color: #3ddc6a;
+  transition: background-color 9999s ease-out 0s;
+  box-shadow: 0 0 0 1000px #2a2d33 inset !important;
 }
 .gate-cta {
   width: 100%;
