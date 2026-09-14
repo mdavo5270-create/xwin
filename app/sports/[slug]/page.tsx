@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PublicChrome } from "@/components/PublicChrome";
+import { HubShell } from "@/components/HubShell";
 import { MatchCard } from "@/components/MatchCard";
 import { getMember } from "@/lib/members";
 import { listPublishedPronos } from "@/lib/store";
@@ -18,17 +17,15 @@ export default async function SportPage({ params }: { params: Promise<{ slug: st
   const member = await getMember();
   const open = groupMatches((await listPublishedPronos(slug)).filter((p) => p.result === "pending"));
   return (
-    <PublicChrome member={member}>
-      <main className="wrap programme">
-        <p className="kicker">Matchs du jour</p>
+    <HubShell member={member} tab="/accueil">
+      <div className="hub-body">
         <h1>{sportLabel(slug)}</h1>
         {open.length === 0 ? (
           <p className="empty">Aucun match publié pour {sportLabel(slug)}.</p>
         ) : (
           <div className="fix-list">{open.map((m) => <MatchCard key={m.key} m={m} />)}</div>
         )}
-        <p className="muted" style={{ marginTop: "1.4rem" }}><Link href="/">← Tous les sports</Link></p>
-      </main>
-    </PublicChrome>
+      </div>
+    </HubShell>
   );
 }
