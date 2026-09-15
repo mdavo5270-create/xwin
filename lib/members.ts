@@ -6,6 +6,7 @@ import { safeCompareEqualLength } from "./safe-compare";
 import { rateLimit } from "./rate-limit";
 import { sendMail } from "./mailer";
 import { makePublicId } from "./public-id";
+import { SITE_URL } from "./site";
 import type { Member } from "./types";
 
 const COOKIE = "xwin_member";
@@ -110,7 +111,7 @@ export async function requestPasswordReset(email: string) {
     insert into password_resets (id, user_id, token_hash, expires_at)
     values (${randomUUID()}, ${row.id}, ${tokenHash}, now() + interval '1 hour')
   `;
-  const base = process.env.NEXT_PUBLIC_SITE_URL || "https://xwin-q9ze.netlify.app";
+  const base = SITE_URL;
   const link = `${base}/reset-password?token=${token}`;
   const mail = await sendMail(clean, "Réinitialise ton mot de passe XWIN", `Lien valable 1 heure : ${link}`);
   return { ok: true as const, sent: mail.sent, link: mail.sent ? undefined : link };

@@ -1,7 +1,6 @@
 import type { MetadataRoute } from "next";
-
-const BASE_URL = "https://xwin-staiglobal0-6471.vercel.app";
+import { SITE_URL } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
-  return { rules: { userAgent: "*", allow: "/", disallow: ["/admin", "/app"] }, sitemap: `${BASE_URL}/sitemap.xml` };
+  return { rules: { userAgent: "*", allow: "/", disallow: ["/admin", "/app"] }, sitemap: `${SITE_URL}/sitemap.xml` };
 }
