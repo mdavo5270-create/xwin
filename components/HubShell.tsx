@@ -31,7 +31,7 @@ export function HubShell({
             <span>Profil personnel</span>
           </Link>
           <Link className="hub-ico" href="/contact" aria-label="Messages">@</Link>
-          <Link className="hub-ico" href={member ? "/app/settings" : "/connexion"} aria-label="Réglages">*</Link>
+          <Link className="hub-ico" href={member ? "/app/securite" : "/connexion"} aria-label="Réglages">*</Link>
         </header>
         <nav className="hub-tabs">
           {TABS.map((t) => (
