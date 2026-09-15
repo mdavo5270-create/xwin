@@ -19,7 +19,7 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
           <Link href="/service">Service</Link>
         </nav>
         <div className="pub-auth">
-          {member ? <Link className="btn-sm" href="/app">Espace</Link> : (
+          {member ? <Link className="btn-sm" href="/accueil">Espace</Link> : (
             <>
               <Link href="/connexion">Connexion</Link>
               <Link className="btn-sm" href="/connexion?tab=inscription">S’inscrire</Link>
@@ -34,7 +34,7 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
         <Link href="/pronostics">Match</Link>
         <Link href="/resultats">Historique</Link>
         <Link href="/service">Service</Link>
-        <Link href={member ? "/app" : "/connexion"}>Moi</Link>
+        <Link href={member ? "/accueil" : "/connexion"}>Moi</Link>
       </nav>
       <footer className="pub-foot">
         <div className="foot-top">
@@ -53,7 +53,7 @@ export function PublicChrome({ member, children }: { member: Member | null; chil
             </div>
             <div className="foot-col">
               <h4>Compte</h4>
-              {member ? <Link href="/app">Mon espace</Link> : (
+              {member ? <Link href="/accueil">Mon espace</Link> : (
                 <>
                   <Link href="/connexion">Connexion</Link>
                   <Link href="/connexion?tab=inscription">S’inscrire</Link>
