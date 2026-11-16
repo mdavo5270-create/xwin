@@ -57,9 +57,13 @@ function plusDays(iso: string, n: number) {
 }
 
 async function getJson(url: string) {
-  const res = await fetch(url, { next: { revalidate: 0 } });
-  if (!res.ok) return null;
-  return res.json() as Promise<Record<string, unknown>>;
+  try {
+    const res = await fetch(url, { next: { revalidate: 0 }, signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return null;
+    return (await res.json()) as Record<string, unknown>;
+  } catch {
+    return null; // API externe indisponible : on ignore, la page ne doit pas planter
+  }
 }
 
 function readEvents(data: Record<string, unknown> | null): Record<string, string>[] {
@@ -105,26 +109,33 @@ async function collectFixtures(): Promise<Raw[]> {
     out.push(row);
   };
 
-  for (const league of LEAGUES) {
-    const next = readEvents(await getJson(`https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=${league.id}`));
-    for (const ev of next) push(fromApi(ev, league.sport));
+  const start = todayParis();
+  const year = start.slice(0, 4);
+  const base = "https://www.thesportsdb.com/api/v1/json/3";
+
+  const leagueJobs = LEAGUES.map(async (league) => {
+    const next = readEvents(await getJson(`${base}/eventsnextleague.php?id=${league.id}`));
+    const rows = next.map((ev) => fromApi(ev, league.sport));
     if (league.sport === "tennis") {
-      const year = todayParis().slice(0, 4);
-      const season = readEvents(await getJson(`https://www.thesportsdb.com/api/v1/json/3/eventsseason.php?id=${league.id}&s=${year}`));
+      const season = readEvents(await getJson(`${base}/eventsseason.php?id=${league.id}&s=${year}`));
       for (const ev of season) {
         const row = fromApi(ev, league.sport);
-        if (row && row.day >= todayParis()) push(row);
+        if (row && row.day >= start) rows.push(row);
       }
     }
-  }
+    return rows;
+  });
 
-  const start = todayParis();
-  for (const spec of DAY_SPORTS) {
-    for (let i = 0; i < 10; i++) {
+  const dayJobs = DAY_SPORTS.flatMap((spec) =>
+    Array.from({ length: 10 }, async (_, i) => {
       const day = plusDays(start, i);
-      const data = await getJson(`https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${day}&s=${encodeURIComponent(spec.api)}`);
-      for (const ev of readEvents(data)) push(fromApi(ev, spec.sport));
-    }
+      const data = await getJson(`${base}/eventsday.php?d=${day}&s=${encodeURIComponent(spec.api)}`);
+      return readEvents(data).map((ev) => fromApi(ev, spec.sport));
+    }),
+  );
+
+  for (const rows of await Promise.all([...leagueJobs, ...dayJobs])) {
+    for (const row of rows) push(row);
   }
   return out.sort((a, b) => `${a.day}${a.time}`.localeCompare(`${b.day}${b.time}`));
 }

@@ -4,7 +4,8 @@ const isProd = process.env.NODE_ENV === "production";
 
 const csp = [
   "default-src 'self'",
-  "script-src 'self'",
+  // Next.js injecte des <script> inline (hydratation) : sans 'unsafe-inline' le site s'affiche mais reste inerte.
+  "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self' data:",

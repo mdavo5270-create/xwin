@@ -12,7 +12,11 @@ export const dynamic = "force-dynamic";
 
 export default async function PronosticsPage() {
   await ensureSchema();
-  await ensureDailyFeed();
+  // Ne jamais bloquer ni faire planter la page si l'API externe est lente ou en panne.
+  await Promise.race([
+    ensureDailyFeed().catch(() => null),
+    new Promise((resolve) => setTimeout(resolve, 7000)),
+  ]);
   const member = await getMember();
   const pending = (await listPublishedPronos()).filter((p) => p.result === "pending");
   const open = groupMatches(pending);
