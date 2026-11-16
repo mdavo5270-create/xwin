@@ -5,6 +5,7 @@ import { getActiveLicense } from "@/lib/licenses";
 import { listRecentSettledPronos } from "@/lib/store";
 import { ensureSchema } from "@/lib/schema";
 import { activateLicenseAction } from "./actions";
+import { PayForm } from "./PayForm";
 
 export const dynamic = "force-dynamic";
 
@@ -36,8 +37,21 @@ export default async function AbonnementPage({
             <p>Crée un compte pour obtenir un ID. <Link href="/inscription">Inscription</Link></p>
           )}
         </article>
+
         <article className="card">
-          <h2>Activer une licence</h2>
+          <h2>Payer par MTN MoMo</h2>
+          <p className="muted">Bénin · SasPay · réseau mtn_bj</p>
+          {member ? (
+            <PayForm />
+          ) : (
+            <p className="muted">
+              <Link href="/connexion?next=/abonnement">Connecte-toi</Link> pour payer.
+            </p>
+          )}
+        </article>
+
+        <article className="card">
+          <h2>Activer un code licence</h2>
           {q.ok ? <p>Licence activée.</p> : null}
           {q.err ? <p>{q.err}</p> : null}
           {member ? (
@@ -49,11 +63,13 @@ export default async function AbonnementPage({
             <p className="muted">Connecte-toi pour taper le code.</p>
           )}
         </article>
+
         <article className="card">
-          <h2>7 jours ou 30 jours</h2>
-          <p>Envoie ton ID sur Telegram. Tu reçois un code. Tu le tapes ci-dessus. Paiement in-app désactivé.</p>
+          <h2>Aide</h2>
+          <p className="muted">Si le push MTN n’arrive pas, écris sur Telegram avec ton ID compte.</p>
           <a className="btn" href={TELEGRAM} target="_blank" rel="noreferrer">Ouvrir Telegram</a>
         </article>
+
         <h2>Derniers résultats</h2>
         {recents.length === 0 ? <p className="empty">Aucun résultat publié.</p> : recents.map((p) => (
           <article className="card" key={p.id}>
